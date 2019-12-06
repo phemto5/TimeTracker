@@ -5,19 +5,20 @@ const client = axios.create({
   baseURL: 'http://localhost:8081/',
   json: true
 })
-export default {
-  async execute (method, resource, data) {
-    return client({
-      method,
-      url: resource,
-      data,
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    }).then(req => {
-      return req.data
-    })
-  },
+const exebase = async (method, resource, data) => {
+  return client({
+    method,
+    url: resource,
+    data,
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  }).then(req => {
+    return req.data
+  })
+}
+export const chunkAPI = {
+  execute: exebase,
   getChunks () {
     return this.execute('get', '/chunks')
   },
@@ -32,5 +33,24 @@ export default {
   },
   deleteChunk (id) {
     return this.execute('delete', `/chunks/${id}`)
+  }
+}
+
+export const customerAPI = {
+  execute: exebase,
+  getCustomers () {
+    return this.execute('get', '/customers')
+  },
+  getCustomer (id) {
+    return this.execute('get', `/customers/${id}`)
+  },
+  createCustomer (data) {
+    return this.execute('post', '/customers', data)
+  },
+  updateCustomer (id, data) {
+    return this.execute('put', `/customers/${id}`, data)
+  },
+  deleteCustomer (id) {
+    return this.execute('delete', `/customers/${id}`)
   }
 }

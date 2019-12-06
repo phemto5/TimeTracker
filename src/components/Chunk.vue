@@ -45,7 +45,7 @@
               <b-form-input type="text" v-model="model.tag"></b-form-input>
             </b-form-group>
             <div>
-              <b-button type="submit" variant="sucess">Save Chunk of Time</b-button>
+              <b-button type="submit" variant="success">Save</b-button>
             </div>
           </form>
         </b-card>
@@ -55,7 +55,7 @@
 </template>
 
 <script>
-import api from '@/api'
+import {chunkAPI} from '@/api'
 const NewChunk = {
   start: new Date()
 }
@@ -69,7 +69,7 @@ export default {
   methods: {
     async refreshChunks () {
       this.loading = true
-      this.chunks = await api.getChunks()
+      this.chunks = await chunkAPI.getChunks()
       this.loading = false
     },
     async populateChunkToEdit (chunk) {
@@ -78,9 +78,9 @@ export default {
     async saveChunk () {
       this.model.stop = new Date()
       if (this.model.id) {
-        await api.updateChunk(this.model.id, this.model)
+        await chunkAPI.updateChunk(this.model.id, this.model)
       } else {
-        await api.createChunk(this.model)
+        await chunkAPI.createChunk(this.model)
       }
       this.model = NewChunk
       await this.refreshChunks()
@@ -90,7 +90,7 @@ export default {
         if (this.model.id === id) {
           this.model = NewChunk
         }
-        await api.deleteChunk(id)
+        await chunkAPI.deleteChunk(id)
         await this.refreshChunks()
       }
     }
