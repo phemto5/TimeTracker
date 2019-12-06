@@ -17,7 +17,7 @@ let database = new Sequelize({
 let Chunk = database.define('chunk', {
   start: Sequelize.STRING,
   stop: Sequelize.STRING,
-  customer: Sequelize.STRING,
+  customer: Sequelize.NUMBER,
   body: Sequelize.TEXT,
   tag: Sequelize.STRING
 })
