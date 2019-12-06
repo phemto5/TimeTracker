@@ -25,15 +25,19 @@
               <td>{{ customer.emails }}</td>
               <td>{{ customer.webSites }}</td>
               <td class="text-right">
-                <a href="#" @click.prevent="populateCustomerToEdit(customer)">Edit</a>
-                <a href="#" @click.prevent="deleteCustomer(customer.id)">Delete</a>
+                <a href="#" @click.prevent="populateCustomerToEdit(customer)"
+                  >Edit</a
+                >
+                <a href="#" @click.prevent="deleteCustomer(customer.id)"
+                  >Delete</a
+                >
               </td>
             </tr>
           </tbody>
         </table>
       </b-col>
       <b-col lg="3">
-        <b-card :title="(model.id ?'Edit Post ID#' + model.id:'New Post')">
+        <b-card :title="model.id ? 'Edit Post ID#' + model.id : 'New Post'">
           <form @submit.prevent="saveCustomer">
             <b-form-group label="Customer Name">
               <b-form-input type="text" v-model="model.name"></b-form-input>
@@ -64,44 +68,43 @@
 </template>
 
 <script>
-import {customerAPI} from '@/api'
-const NewCustomer = {
-}
+import { customerAPI } from "@/api";
+const NewCustomer = {};
 export default {
-  data () {
-    return { loading: false, customers: [], model: NewCustomer }
+  data() {
+    return { loading: false, customers: [], model: NewCustomer };
   },
-  async created () {
-    this.refreshCustomers()
+  async created() {
+    this.refreshCustomers();
   },
   methods: {
-    async refreshCustomers () {
-      this.loading = true
-      this.customers = await customerAPI.getCustomers()
-      this.loading = false
+    async refreshCustomers() {
+      this.loading = true;
+      this.customers = await customerAPI.getCustomers();
+      this.loading = false;
     },
-    async populateCustomerToEdit (customer) {
-      this.model = Object.assign({}, customer)
+    async populateCustomerToEdit(customer) {
+      this.model = Object.assign({}, customer);
     },
-    async saveCustomer () {
-      this.model.stop = new Date()
+    async saveCustomer() {
+      this.model.stop = new Date();
       if (this.model.id) {
-        await customerAPI.updateCustomer(this.model.id, this.model)
+        await customerAPI.updateCustomer(this.model.id, this.model);
       } else {
-        await customerAPI.createCustomer(this.model)
+        await customerAPI.createCustomer(this.model);
       }
-      this.model = NewCustomer
-      await this.refreshCustomers()
+      this.model = NewCustomer;
+      await this.refreshCustomers();
     },
-    async deleteCustomer (id) {
-      if (confirm('Are you sure you want to delete it ???')) {
+    async deleteCustomer(id) {
+      if (confirm("Are you sure you want to delete it ???")) {
         if (this.model.id === id) {
-          this.model = NewCustomer
+          this.model = NewCustomer;
         }
-        await customerAPI.deleteCustomer(id)
-        await this.refreshCustomers()
+        await customerAPI.deleteCustomer(id);
+        await this.refreshCustomers();
       }
     }
   }
-}
+};
 </script>
