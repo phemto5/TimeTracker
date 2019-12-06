@@ -7,6 +7,7 @@
         <b-navbar-nav>
           <b-nav-item to="/chunks">Chunks</b-nav-item>
           <b-nav-item to="/customers">Customers</b-nav-item>
+          <b-nav-item to="/contacts">Contacts</b-nav-item>
           <b-nav-item to="/help">Help</b-nav-item>
         </b-navbar-nav>
       </b-collapse>
@@ -16,7 +17,6 @@
 </template>
 <script>
 export default {
-  name: 'app'
-}
+  name: "app"
+};
 </script>
-

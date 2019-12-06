@@ -1,10 +1,17 @@
 # timetrack
 
-> A Vue.js project
+> To use this Clone the repo:
+
+- npm install
+- node ./src/server.js
+
+> open another terminal
+
+- npm run dev
 
 ## Build Setup
 
-``` bash
+```bash
 # install dependencies
 npm install
 
