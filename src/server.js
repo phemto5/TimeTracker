@@ -24,7 +24,8 @@ let Customer = database.define("customer", {
 let Contact = database.define("contact", {
   fname: Sequelize.STRING,
   mname: Sequelize.STRING,
-  lname: Sequelize.STRING
+  lname: Sequelize.STRING,
+  customerId: Sequelize.NUMBER
 });
 let Address = database.define("address", {
   street1: Sequelize.STRING,
@@ -32,19 +33,27 @@ let Address = database.define("address", {
   city: Sequelize.STRING,
   country: Sequelize.STRING,
   zip: Sequelize.NUMBER,
-  endpointType: Sequelize.NUMBER
+  endpointType: Sequelize.NUMBER,
+  refType: Sequelize.STRING,
+  refID: Sequelize.NUMBER
 });
 let Phone = database.define("phone", {
   number: Sequelize.STRING,
-  endpointType: Sequelize.NUMBER
+  endpointType: Sequelize.NUMBER,
+  refType: Sequelize.STRING,
+  refID: Sequelize.NUMBER
 });
 let Email = database.define("email", {
   email: Sequelize.STRING,
-  endpointType: Sequelize.NUMBER
+  endpointType: Sequelize.NUMBER,
+  refType: Sequelize.STRING,
+  refID: Sequelize.NUMBER
 });
 let Web = database.define("web", {
   uri: Sequelize.STRING,
-  endpointType: Sequelize.NUMBER
+  endpointType: Sequelize.NUMBER,
+  refType: Sequelize.STRING,
+  refID: Sequelize.NUMBER
 });
 let EndType = database.define("endtype", {
   name: Sequelize.STRING

@@ -1,6 +1,6 @@
 <template>
   <div class="container-fluid mt-4">
-    <h1 class="h1"> Time Manger</h1>
+    <h1 class="h1">Time Manger</h1>
     <b-alert :show="loading" variant="info">Loading...</b-alert>
     <b-row>
       <b-col>
@@ -33,10 +33,13 @@
         </table>
       </b-col>
       <b-col lg="3">
-        <b-card :title="(model.id ?'Edit Post ID#' + model.id:'New Post')">
+        <b-card :title="model.id ? 'Edit Post ID#' + model.id : 'New Post'">
           <form @submit.prevent="saveChunk">
             <b-form-group label="Customer">
-              <b-form-select v-model="model.customer" :options="customers"></b-form-select>
+              <b-form-select
+                v-model="model.customer"
+                :options="customers"
+              ></b-form-select>
             </b-form-group>
             <b-form-group label="Description">
               <b-form-textarea rows="4" v-model="model.body"></b-form-textarea>
@@ -55,64 +58,68 @@
 </template>
 
 <script>
-import {chunkAPI, customerAPI} from '@/api'
+import { chunkAPI, customerAPI } from "@/api";
 const NewChunk = {
   start: new Date()
-}
-let map = (customers) => {
-  let options = []
-  customers.forEach(customer => {
-    options.push({
-      value: customer.id,
-      text: customer.name
-    })
-  })
-  return options
-}
+};
+// let map = customers => {
+//   let options = [];
+//   customers.forEach(customer => {
+//     options.push({
+//       value: customer.id,
+//       text: customer.name
+//     });
+//   });
+//   return options;
+// };
 
 export default {
-  data () {
-    return { loading: false, chunks: [], customers: [], model: NewChunk }
+  data() {
+    return { loading: false, chunks: [], customers: [], model: NewChunk };
   },
-  async created () {
-    this.refreshChunks()
+  async created() {
+    this.refreshChunks();
   },
   methods: {
-    async refreshChunks () {
-      this.loading = true
-      let custs = await customerAPI.getCustomers()
-      this.customers = map(custs)
-      let chks = await chunkAPI.getChunks()
+    async refreshChunks() {
+      this.loading = true;
+      let custs = await customerAPI.getCustomers();
+      this.customers = custs.map(cust => {
+        return { value: cust.id, text: cust.name };
+      });
+      let chks = await chunkAPI.getChunks();
       this.chunks = chks.map(chunk => {
-        let c = custs.filter((cust) => cust.id === chunk.customer)
-        chunk.customer = c[0].name
-        return chunk
-      })
-      this.loading = false
+        let c = custs.filter(cust => cust.id === chunk.customer);
+        chunk.customer = c[0].name;
+        return chunk;
+      });
+      this.loading = false;
     },
-    async populateChunkToEdit (chunk) {
-      let selected = this.customers.filter((cust) => cust.text === chunk.customer)
-      this.model = Object.assign({}, chunk, {customer: selected[0].value})
+    async populateChunkToEdit(chunk) {
+      let selected = this.customers.filter(
+        cust => cust.text === chunk.customer
+      );
+      this.model = Object.assign({}, chunk, { customer: selected[0].value });
     },
-    async saveChunk () {
-      this.model.stop = new Date()
+    async saveChunk() {
+      this.model.stop = new Date();
       if (this.model.id) {
-        await chunkAPI.updateChunk(this.model.id, this.model)
+        await chunkAPI.updateChunk(this.model.id, this.model);
       } else {
-        await chunkAPI.createChunk(this.model)
+        await chunkAPI.createChunk(this.model);
       }
-      this.model = NewChunk
-      await this.refreshChunks()
+      this.model = NewChunk;
+      await this.refreshChunks();
     },
-    async deleteChunk (id) {
-      if (confirm('Are you sure you want to delete it ???')) {
+    async deleteChunk(id) {
+      if (confirm("Are you sure you want to delete it ???")) {
         if (this.model.id === id) {
-          this.model = NewChunk
+          this.model = NewChunk;
         }
-        await chunkAPI.deleteChunk(id)
-        await this.refreshChunks()
+        await chunkAPI.deleteChunk(id);
+        await this.refreshChunks();
       }
     }
   }
-}
+};
 </script>

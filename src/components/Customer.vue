@@ -9,6 +9,7 @@
             <tr>
               <th>ID</th>
               <th>Name</th>
+              <th>Contacts</th>
               <th>Addresses</th>
               <th>Phones</th>
               <th>Email</th>
@@ -20,6 +21,7 @@
             <tr v-for="customer in customers" :key="customer.id">
               <td>{{ customer.id }}</td>
               <td>{{ customer.name }}</td>
+              <td>{{ customer.contacts }}</td>
               <td>{{ customer.addresses }}</td>
               <td>{{ customer.phones }}</td>
               <td>{{ customer.emails }}</td>
@@ -68,11 +70,15 @@
 </template>
 
 <script>
-import { customerAPI } from "@/api";
-const NewCustomer = {};
+import { customerAPI, contactAPI } from "@/api";
+const NewCustomer = Object.assign({});
 export default {
   data() {
-    return { loading: false, customers: [], model: NewCustomer };
+    return {
+      loading: false,
+      customers: [],
+      model: NewCustomer
+    };
   },
   async created() {
     this.refreshCustomers();
@@ -80,14 +86,23 @@ export default {
   methods: {
     async refreshCustomers() {
       this.loading = true;
+      this.contacts = await contactAPI.getContacts();
       this.customers = await customerAPI.getCustomers();
+      this.customers.forEach(cust => {
+        let custCon = this.contacts.filter(
+          contact => contact.customerId == cust.id
+        );
+        cust.contacts = custCon.reduce(
+          (list, con) => list + "'" + con.fname + " " + con.lname + "'",
+          ""
+        );
+      });
       this.loading = false;
     },
     async populateCustomerToEdit(customer) {
       this.model = Object.assign({}, customer);
     },
     async saveCustomer() {
-      this.model.stop = new Date();
       if (this.model.id) {
         await customerAPI.updateCustomer(this.model.id, this.model);
       } else {

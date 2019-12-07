@@ -11,6 +11,7 @@
               <th>First Name</th>
               <th>Middle Name</th>
               <th>Last Name</th>
+              <th>Customer ID</th>
               <th>Addresses</th>
               <th>Phones</th>
               <th>Email</th>
@@ -24,6 +25,7 @@
               <td>{{ contact.fname }}</td>
               <td>{{ contact.mname }}</td>
               <td>{{ contact.lname }}</td>
+              <td>{{ contact.customerId }}</td>
               <td>{{ contact.addresses }}</td>
               <td>{{ contact.phones }}</td>
               <td>{{ contact.emails }}</td>
@@ -60,6 +62,14 @@
                 v-model="model.lname"
               ></b-form-input>
             </b-form-group>
+            <b-form-group label="Customer Name">
+              <b-form-select
+                :options="customers"
+                type="text"
+                placeholder="Customer"
+                v-model="model.customerId"
+              ></b-form-select>
+            </b-form-group>
             <b-form-group label="Addresses">
               <!-- <b-form-textarea rows="4" v-model="model.addresses"></b-form-textarea> -->
             </b-form-group>
@@ -83,11 +93,11 @@
 </template>
 
 <script>
-import { contactAPI } from "@/api";
-const NewContact = {};
+import { contactAPI, customerAPI } from "@/api";
+const NewContact = Object.assign({});
 export default {
   data() {
-    return { loading: false, contacts: [], model: NewContact };
+    return { loading: false, contacts: [], customers: [], model: NewContact };
   },
   async created() {
     this.refreshContacts();
@@ -95,14 +105,29 @@ export default {
   methods: {
     async refreshContacts() {
       this.loading = true;
-      this.contacts = await contactAPI.getContacts();
+      let custs = await customerAPI.getCustomers();
+      this.customers = custs.map(cust => {
+        return { value: cust.id, text: cust.name };
+      });
+      let conts = await contactAPI.getContacts();
+      this.contacts = conts.map(cont => {
+        if (custs.length != 0) {
+          let c = custs.filter(cust => cust.id === cont.customerId);
+          cont.customerId = c[0].name;
+        }
+        return cont;
+      });
       this.loading = false;
     },
     async populateContactToEdit(contact) {
-      this.model = Object.assign({}, contact);
+      let selected = this.customers.filter(
+        cust => cust.text === contact.customerId
+      );
+      this.model = Object.assign({}, contact, {
+        customerId: selected[0].value
+      });
     },
     async saveContact() {
-      this.model.stop = new Date();
       if (this.model.id) {
         await contactAPI.updateContact(this.model.id, this.model);
       } else {
