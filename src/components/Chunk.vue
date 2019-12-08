@@ -101,7 +101,11 @@ export default {
       let selected = this.customers.filter(
         cust => cust.text === chunk.customer
       );
-      this.model = Object.assign({}, chunk, { customer: selected[0].value });
+      let model = Object.assign({},chunk);
+      if(selected.length !=0 ){
+        this.model = Object.assign(this.model,{customer: selected[0].value});
+      }
+      
     },
     async saveChunk() {
       this.model.stop = new Date();
