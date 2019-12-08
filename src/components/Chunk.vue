@@ -90,7 +90,9 @@ export default {
       let chks = await chunkAPI.getChunks();
       this.chunks = chks.map(chunk => {
         let c = custs.filter(cust => cust.id === chunk.customer);
+        if (c.length != 0){
         chunk.customer = c[0].name;
+        }
         return chunk;
       });
       this.loading = false;
