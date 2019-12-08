@@ -101,7 +101,7 @@ export default {
       let selected = this.customers.filter(
         cust => cust.text === chunk.customer
       );
-      let model = Object.assign({},chunk);
+      this.model = Object.assign({},chunk);
       if(selected.length !=0 ){
         this.model = Object.assign(this.model,{customer: selected[0].value});
       }
