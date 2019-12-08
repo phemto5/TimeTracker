@@ -2,11 +2,11 @@
 
 > To use this Clone the repo:
 
+- in a terninal
+- git pull
 - npm install
 - node ./src/server.js
-
-> open another terminal
-
+- open another terminal
 - npm run dev
 
 ## Build Setup
