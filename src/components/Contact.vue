@@ -31,12 +31,8 @@
               <td>{{ contact.emails }}</td>
               <td>{{ contact.webSites }}</td>
               <td class="text-right">
-                <a href="#" @click.prevent="populateContactToEdit(contact)"
-                  >Edit</a
-                >
-                <a href="#" @click.prevent="deleteContact(contact.id)"
-                  >Delete</a
-                >
+                <a href="#" @click.prevent="populateContactToEdit(contact)">Edit</a>
+                <a href="#" @click.prevent="deleteContact(contact.id)">Delete</a>
               </td>
             </tr>
           </tbody>
@@ -46,21 +42,9 @@
         <b-card :title="model.id ? 'Edit Post ID#' + model.id : 'New Post'">
           <form @submit.prevent="saveContact">
             <b-form-group label="Contact Name">
-              <b-form-input
-                type="text"
-                placeholder="First Name"
-                v-model="model.fname"
-              ></b-form-input>
-              <b-form-input
-                type="text"
-                placeholder="Middle Name"
-                v-model="model.mname"
-              ></b-form-input>
-              <b-form-input
-                type="text"
-                placeholder="Last Name"
-                v-model="model.lname"
-              ></b-form-input>
+              <b-form-input type="text" placeholder="First Name" v-model="model.fname"></b-form-input>
+              <b-form-input type="text" placeholder="Middle Name" v-model="model.mname"></b-form-input>
+              <b-form-input type="text" placeholder="Last Name" v-model="model.lname"></b-form-input>
             </b-form-group>
             <b-form-group label="Customer Name">
               <b-form-select
@@ -113,7 +97,9 @@ export default {
       this.contacts = conts.map(cont => {
         if (custs.length != 0) {
           let c = custs.filter(cust => cust.id === cont.customerId);
-          cont.customerId = c[0].name;
+          if (c.length != 0) {
+            cont.customerId = c[0].name;
+          }
         }
         return cont;
       });
@@ -123,9 +109,12 @@ export default {
       let selected = this.customers.filter(
         cust => cust.text === contact.customerId
       );
-      this.model = Object.assign({}, contact, {
-        customerId: selected[0].value
-      });
+      this.model = Object.assign({}, contact);
+      if (selected.length != 0) {
+        this.model = Object.assign(this.model, {
+          customerId: selected[0].value
+        });
+      }
     },
     async saveContact() {
       if (this.model.id) {

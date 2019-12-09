@@ -45,6 +45,9 @@
               <b-form-input type="text" v-model="model.name"></b-form-input>
             </b-form-group>
             <b-form-group label="Contacts">
+              <!-- <b-list-group>
+                <b-list-group-item></b-list-group-item>
+              </b-list-group> -->
               <!-- <b-form-input type="text" v-model="model.tag"></b-form-input> -->
             </b-form-group>
             <b-form-group label="Addresses">
