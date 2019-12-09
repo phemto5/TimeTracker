@@ -14,3 +14,18 @@
     </b-row>
   </div>
 </template>
+
+<script>
+import { chunkAPI, customerAPI } from "@/api";
+let timer = Object.assign({ start: null, stop: null, cust: null, desc: "" });
+export default {
+  data() {
+    return { loading: false, chunks: [], customers: [], model: timer };
+  },
+  async created() {},
+  methods: {
+    async startChunk() {},
+    async stopChunk() {}
+  }
+};
+</script>
