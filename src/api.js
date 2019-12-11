@@ -2,7 +2,8 @@
 import axios from "axios";
 
 const client = axios.create({
-  baseURL: "http://localhost:8081/",
+  baseURL:
+    "http://" + window.location.hostname + ":8081/" || "http://localhost:8081/",
   json: true
 });
 const exebase = async (method, resource, data) => {
