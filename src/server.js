@@ -13,6 +13,7 @@ let database = new Sequelize({
 });
 let Chunk = database.define("chunk", {
   start: Sequelize.STRING,
+  open: Sequelize.BOOLEAN,
   stop: Sequelize.STRING,
   customer: Sequelize.NUMBER,
   body: Sequelize.TEXT,

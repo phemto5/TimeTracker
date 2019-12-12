@@ -4,6 +4,7 @@ import Help from "@/components/Help";
 import Chunk from "@/components/Chunk";
 import Customer from "@/components/Customer";
 import Contact from "@/components/Contact";
+import Timer from "@/components/Timer";
 
 Vue.use(Router);
 
@@ -22,8 +23,8 @@ export default new Router({
     },
     {
       path: "/",
-      name: "Time Managment",
-      component: Chunk,
+      name: "Timer",
+      component: Timer,
       meta: {}
     },
     {

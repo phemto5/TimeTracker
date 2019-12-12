@@ -36,10 +36,7 @@
         <b-card :title="model.id ? 'Edit Post ID#' + model.id : 'New Post'">
           <form @submit.prevent="saveChunk">
             <b-form-group label="Customer">
-              <b-form-select
-                v-model="model.customer"
-                :options="customers"
-              ></b-form-select>
+              <b-form-select v-model="model.customer" :options="customers"></b-form-select>
             </b-form-group>
             <b-form-group label="Description">
               <b-form-textarea rows="4" v-model="model.body"></b-form-textarea>
@@ -60,7 +57,8 @@
 <script>
 import { chunkAPI, customerAPI } from "@/api";
 const NewChunk = {
-  start: new Date()
+  start: new Date(),
+  open: true
 };
 // let map = customers => {
 //   let options = [];
@@ -90,8 +88,8 @@ export default {
       let chks = await chunkAPI.getChunks();
       this.chunks = chks.map(chunk => {
         let c = custs.filter(cust => cust.id === chunk.customer);
-        if (c.length != 0){
-        chunk.customer = c[0].name;
+        if (c.length != 0) {
+          chunk.customer = c[0].name;
         }
         return chunk;
       });
@@ -101,13 +99,13 @@ export default {
       let selected = this.customers.filter(
         cust => cust.text === chunk.customer
       );
-      this.model = Object.assign({},chunk);
-      if(selected.length !=0 ){
-        this.model = Object.assign(this.model,{customer: selected[0].value});
+      this.model = Object.assign({}, chunk);
+      if (selected.length != 0) {
+        this.model = Object.assign(this.model, { customer: selected[0].value });
       }
-      
     },
     async saveChunk() {
+      this.model.open = false;
       this.model.stop = new Date();
       if (this.model.id) {
         await chunkAPI.updateChunk(this.model.id, this.model);
