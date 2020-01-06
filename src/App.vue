@@ -5,6 +5,7 @@
       <b-navbar-brand to="/">Home</b-navbar-brand>
       <b-collapse is-nav id="nav_collapse">
         <b-navbar-nav>
+          <b-nav-item to="/">Timer</b-nav-item>
           <b-nav-item to="/chunks">Chunks</b-nav-item>
           <b-nav-item to="/customers">Customers</b-nav-item>
           <b-nav-item to="/contacts">Contacts</b-nav-item>
