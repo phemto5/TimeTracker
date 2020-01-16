@@ -18,6 +18,24 @@ const exebase = async (method, resource, data) => {
     return req.data;
   });
 };
+export const accountAPI = {
+  execute:exebase,
+  getAccount() {
+    return this.execute("get", "/account");
+  },
+  getAccount(id) {
+    return this.execute("get", `/account/${id}`);
+  },
+  createAccount(data) {
+    return this.execute("post", "/account", data);
+  },
+  updateAccount(id, data) {
+    return this.execute("put", `/account/${id}`, data);
+  },
+  deleteAccount(id) {
+    return this.execute("delete", `/account/${id}`);
+  }
+}
 export const chunkAPI = {
   execute: exebase,
   getChunks() {

@@ -22,9 +22,21 @@ export default new Router({
       meta: {}
     },
     {
-      path: "/",
+      path: "/timer",
       name: "Timer",
       component: Timer,
+      meta: {}
+    },
+    {
+      path: "/",
+      name: "Login",
+      component: Login,
+      meta: {}
+    },
+    {
+      path: "/account",
+      name: "Account Managment",
+      component: Account,
       meta: {}
     },
     {
