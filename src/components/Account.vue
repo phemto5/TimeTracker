@@ -1,75 +1,101 @@
-
 <template>
   <div class="container-fluid mt-4">
     <h1 class="h1">Account</h1>
     <b-alert :show="loading" variant="info">Loading...</b-alert>
     <b-row>
-      <b-col sm="12" md="6" lg="8" xl="10">
+      <b-col sm="12">
         <b-card>
-          <b-card-title>Profile</b-card-title>
-          <b-card-text></b-card-text>
-          <b-input
+          <b-card-title>Account</b-card-title>
+          <b-card-text
             type="text"
-            v-model="model.username"
+            v-model="model.uname"
             placeholder="User Name"
             @blur="updateBody"
-          ></b-input>
+          ></b-card-text>
+        </b-card>
+      </b-col>
+      <b-col sm="12" md="6" lg="4">
+        <b-card>
+          <b-card-title>Name</b-card-title>
+          <b-card-text>First</b-card-text>
           <b-input
-            type="password"
-            v-model="model.password"
-            placeholder="Password"
+            type="text"
+            v-model="model.fname"
+            placeholder="First"
+            @blur="updateBody"
+          ></b-input>
+          <b-card-text>Middle</b-card-text>
+          <b-input
+            type="text"
+            v-model="model.mname"
+            placeholder="Middle"
+            @blur="updateBody"
+          ></b-input>
+          <b-card-text>Last</b-card-text>
+          <b-input
+            type="text"
+            v-model="model.lname"
+            placeholder="Last"
             @blur="updateBody"
           ></b-input>
         </b-card>
       </b-col>
-      <b-row>
+      <b-col sm="12" md="6" lg="4">
         <b-card>
           <b-card-title>Profile</b-card-title>
-          <b-card-text></b-card-text>
+          <b-card-text>Email</b-card-text>
           <b-input
             type="email"
             v-model="model.email"
             placeholder="Email"
             @blur="updateBody"
           ></b-input>
+          <b-card-text>Address</b-card-text>
+          <b-input
+            type="text"
+            v-model="model.address"
+            placeholder="Mailing Address"
+            @blur="updateBody"
+          ></b-input>
         </b-card>
-      </b-row>
+      </b-col>
     </b-row>
   </div>
 </template>
 
 <script>
-import { accountAPI } from "@/api";
+import { accountAPI } from '@/api'
 let account = {
-    username:"",
-    password:"",
-    email:""
+  uname: '',
+  fname: '',
+  lname: '',
+  mname: '',
+  address: '',
+  email: '',
+  password: ''
 }
 export default {
   data() {
     return {
       loading: false,
-      model: Object.assign({}, account),
-    };
+      model: Object.assign({}, account)
+    }
   },
   async created() {
-    this.refreshForm();
+    this.refreshForm()
   },
   methods: {
     refreshForm() {
-      this.loading = true;
-      this.model = timer;
-      this.loading = false;
+      this.loading = true
+      this.model = timer
+      this.loading = false
     },
-    clearForm(){
-        
-    }
+    clearForm() {}
     // updateTime() {
     //   this.time = moment(this.model.start).fromNow("mm");
     // },
     // updateBody() {
     //   this.model.body = this.model.body;
-    },
     // async startChunk(evt) {
     //   this.refreshForm();
     //   evt.preventDefault();
@@ -97,8 +123,8 @@ export default {
     //   this.model.open = false;
     //   this.model = await chunkAPI.updateChunk(this.model.id, this.model);
 
-      // this.model = timer;
+    // this.model = timer;
     // }
   }
-};
+}
 </script>
