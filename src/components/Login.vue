@@ -4,7 +4,7 @@
     <b-alert :show="loading" variant="info">Loading...</b-alert>
     <b-row>
       <b-col sm="12" md="6" lg="8" xl="10">
-        <b-form @submit="onLogin" @reset="onClear">
+        <b-form @submit="login" @reset="clearForm">
           <b-form-group id="login" label="LoginName" label-for="login">
             <b-form-input
               id="login"
@@ -18,7 +18,7 @@
             <b-form-input
               id="pass"
               v-model="model.password"
-              type="text"
+              type="password"
               required
               placeholder="Password"
             ></b-form-input>
@@ -71,7 +71,12 @@ export default {
       this.loading = true
       this.loading = false
     },
-    clearForm() {}
+    clearForm() {},
+    login(){
+      let hashPass = model.password+'7766s';
+      let tokenObj ={token:'',expires:new Date()};
+      tokenObj = accountAPI.getLoginToken(model.uname,hashPass);
+    }
     // updateTime() {
     //   this.time = moment(this.model.start).fromNow("mm");
     // },
