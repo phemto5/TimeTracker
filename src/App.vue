@@ -30,9 +30,10 @@ export default {
   },
   methods: {
     getLoginToken() {
-      loggedin = false //get has token from cookies. and it valid from cookies.
+      loggedin = localStorage.getItem('loggedin');//get has token from cookies. and it valid from cookies.
     },
     refreshPage() {
+      this.getLoginToken();
       //get account token from Cokies
     }
   }
