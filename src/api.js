@@ -1,5 +1,6 @@
 // import Vue from 'vue'
 import axios from 'axios'
+import * as md5 from 'md5'
 
 const client = axios.create({
   baseURL:
@@ -18,6 +19,14 @@ const exebase = async (method, resource, data) => {
     return req.data
   })
 }
+export const loginAPI = {
+  execute: exebase,
+  login(username, password) {
+    let md5p = md5(password)
+    let data = { uname: username, pass: md5p }
+    return this.execute('post', '/login', data)
+  }
+}
 export const accountAPI = {
   execute: exebase,
   getAccount() {
@@ -26,12 +35,12 @@ export const accountAPI = {
   getAccount(id) {
     return this.execute('get', `/account/${id}`)
   },
-  getAccountByUserName(name) {
-    return this.execute('get', `/account/user/${name}`)
-  },
-  getLoginToken(name, passhash) {
-    return this.execute('get', `/account/token/${name}/${passhash}`)
-  },
+  // getAccountByUserName(name) {
+  //   return this.execute('get', `/account/user/${name}`)
+  // },
+  // getLoginToken(name, passhash) {
+  //   return this.execute('get', `/account/token/${name}/${passhash}`)
+  // },
   createAccount(data) {
     return this.execute('post', '/account', data)
   },

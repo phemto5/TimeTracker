@@ -32,7 +32,7 @@
 </template>
 
 <script>
-import { accountAPI } from '@/api'
+import { accountAPI, loginAPI } from '@/api'
 let account = {
   uname: '',
   fname: '',
@@ -55,50 +55,20 @@ export default {
   methods: {
     refreshForm() {
       this.loading = true
-      this.clearForm();
+      this.clearForm()
       this.loading = false
     },
     clearForm() {},
-    login(){
-      let hashPass = this.model.password+'7766s';
-      // let tokenObj ={token:'',expires:new Date()};
-      // let tokenObj = await accountAPI.getLoginToken(this.model.uname,hashPass);
-      localStorage.setItem('loggedin',true);
+    async login() {
+      let token = { msg: '', account: null, token: null, expires: null }
+      token = await loginAPI.login(this.model.uname, this.model.password)
+      if (token.account) {
+        localStorage.setItem('loggedin', true)
+        localStorage.setItem('token', token.token)
+        localStorage.setItem('expires', token.expires)
+        localStorage.setItem('account', token.account)
+      }
     }
-    // updateTime() {
-    //   this.time = moment(this.model.start).fromNow("mm");
-    // },
-    // updateBody() {
-    //   this.model.body = this.model.body;
-    // async startChunk(evt) {
-    //   this.refreshForm();
-    //   evt.preventDefault();
-    //   this.model.start = new Date();
-    //   this.model.open = true;
-    //   this.model = await chunkAPI.createChunk(this.model);
-    //   this.showStart = this.model.start ? false : true;
-    //   this.interval = setInterval(() => {
-    //     this.updateTime();
-    //     console.log("StartedTime");
-    //   }, 1000);
-    // },
-    // async nextChunk(evt) {
-    //   if (this.model.open) {
-    //     await this.stopChunk(evt);
-    //   }
-    //   this.refreshForm();
-    //   await this.startChunk(evt);
-    // },
-
-    // async stopChunk(evt) {
-    //   evt.preventDefault();
-    //   clearInterval(this.interval);
-    //   this.model.stop = new Date();
-    //   this.model.open = false;
-    //   this.model = await chunkAPI.updateChunk(this.model.id, this.model);
-
-    // this.model = timer;
-    // }
   }
 }
 </script>

@@ -5,14 +5,14 @@
       <b-navbar-brand to="/">Home</b-navbar-brand>
       <b-collapse is-nav id="nav_collapse">
         <b-navbar-nav>
-          <b-nav-item v-if="loggedin" to="/account">Account</b-nav-item>
-          <b-nav-item v-else to="/">Login</b-nav-item>
           <div v-if="loggedin">
+            <b-nav-item to="/account">Account</b-nav-item>
             <b-nav-item to="/timer">Timer</b-nav-item>
             <b-nav-item to="/chunks">Chunks</b-nav-item>
             <b-nav-item to="/customers">Customers</b-nav-item>
             <b-nav-item to="/contacts">Contacts</b-nav-item>
           </div>
+          <b-nav-item v-else to="/">Login</b-nav-item>
           <b-nav-item to="/help">Help</b-nav-item>
         </b-navbar-nav>
       </b-collapse>
@@ -30,10 +30,10 @@ export default {
   },
   methods: {
     getLoginToken() {
-      loggedin = localStorage.getItem('loggedin');//get has token from cookies. and it valid from cookies.
+      this.loggedin = localStorage.getItem('loggedin') //get has token from cookies. and it valid from cookies.
     },
     refreshPage() {
-      this.getLoginToken();
+      this.getLoginToken()
       //get account token from Cokies
     }
   }

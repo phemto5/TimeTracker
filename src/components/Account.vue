@@ -85,12 +85,22 @@ export default {
     this.refreshForm()
   },
   methods: {
-    refreshForm() {
+    async refreshForm() {
       this.loading = true
-      this.model = timer
+      this.model = localStorage.getItem('Account')
+      localStorage.setItem(
+        'Account',
+        await accountAPI.getAccount(this.model.id)
+      )
+      this.model = localStorage.getItem('Account')
       this.loading = false
     },
-    clearForm() {}
+    clearForm() {
+      this.loading = true
+      this.model = Object.assign({}, account)
+      this.loading = false
+    },
+    updateBody() {}
     // updateTime() {
     //   this.time = moment(this.model.start).fromNow("mm");
     // },
