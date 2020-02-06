@@ -5,13 +5,11 @@
       <b-navbar-brand to="/">Home</b-navbar-brand>
       <b-collapse is-nav id="nav_collapse">
         <b-navbar-nav>
-          <div v-if="loggedin">
-            <b-nav-item to="/account">Account</b-nav-item>
-            <b-nav-item to="/timer">Timer</b-nav-item>
-            <b-nav-item to="/chunks">Chunks</b-nav-item>
-            <b-nav-item to="/customers">Customers</b-nav-item>
-            <b-nav-item to="/contacts">Contacts</b-nav-item>
-          </div>
+          <b-nav-item v-if="loggedin" to="/account">Account</b-nav-item>
+          <b-nav-item v-if="loggedin" to="/timer">Timer</b-nav-item>
+          <b-nav-item v-if="loggedin" to="/chunks">Chunks</b-nav-item>
+          <b-nav-item v-if="loggedin" to="/customers">Customers</b-nav-item>
+          <b-nav-item v-if="loggedin" to="/contacts">Contacts</b-nav-item>
           <b-nav-item v-else to="/">Login</b-nav-item>
           <b-nav-item to="/help">Help</b-nav-item>
         </b-navbar-nav>

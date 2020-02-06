@@ -33,6 +33,7 @@
 
 <script>
 import { accountAPI, loginAPI } from '@/api'
+import router from '../router'
 let account = {
   uname: '',
   fname: '',
@@ -67,6 +68,9 @@ export default {
         localStorage.setItem('token', token.token)
         localStorage.setItem('expires', token.expires)
         localStorage.setItem('account', token.account)
+        router.push({ name: 'Timer' })
+      } else {
+        this.refreshForm()
       }
     }
   }

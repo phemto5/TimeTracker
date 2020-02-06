@@ -6,11 +6,17 @@
       <b-col sm="12">
         <b-card>
           <b-card-title>Account</b-card-title>
-          <b-card-text
+          <b-input
             type="text"
-            v-model="model.uname"
+            v-model="account.uname"
+            placeholder="UserName"
+            v-if="!account.id"
+          ></b-input>
+          <b-card-text
+            v-else
+            type="text"
+            v-model="account.uname"
             placeholder="User Name"
-            @blur="updateBody"
           ></b-card-text>
         </b-card>
       </b-col>
@@ -20,23 +26,20 @@
           <b-card-text>First</b-card-text>
           <b-input
             type="text"
-            v-model="model.fname"
+            v-model="account.fname"
             placeholder="First"
-            @blur="updateBody"
           ></b-input>
           <b-card-text>Middle</b-card-text>
           <b-input
             type="text"
-            v-model="model.mname"
+            v-model="account.mname"
             placeholder="Middle"
-            @blur="updateBody"
           ></b-input>
           <b-card-text>Last</b-card-text>
           <b-input
             type="text"
-            v-model="model.lname"
+            v-model="account.lname"
             placeholder="Last"
-            @blur="updateBody"
           ></b-input>
         </b-card>
       </b-col>
@@ -46,18 +49,29 @@
           <b-card-text>Email</b-card-text>
           <b-input
             type="email"
-            v-model="model.email"
+            v-model="account.email"
             placeholder="Email"
-            @blur="updateBody"
           ></b-input>
           <b-card-text>Address</b-card-text>
           <b-input
             type="text"
-            v-model="model.address"
+            v-model="account.address"
             placeholder="Mailing Address"
-            @blur="updateBody"
           ></b-input>
         </b-card>
+      </b-col>
+    </b-row>
+    <b-row>
+      <b-col sm="12">
+        <b-button type="button" @click="createAccount" variant="success">
+          Save
+        </b-button>
+        <b-button type="button" @click="refreshForm" variant="warning">
+          Refresh
+        </b-button>
+        <b-button type="button" @click="clearForm" variant="danger">
+          Clear
+        </b-button>
       </b-col>
     </b-row>
   </div>
@@ -65,20 +79,19 @@
 
 <script>
 import { accountAPI } from '@/api'
-let account = {
+let cleanAccount = {
   uname: '',
   fname: '',
   lname: '',
   mname: '',
   address: '',
-  email: '',
-  password: ''
+  email: ''
 }
 export default {
   data() {
     return {
       loading: false,
-      model: Object.assign({}, account)
+      account: Object.assign({}, cleanAccount)
     }
   },
   async created() {
@@ -87,20 +100,28 @@ export default {
   methods: {
     async refreshForm() {
       this.loading = true
-      this.model = localStorage.getItem('Account')
-      localStorage.setItem(
-        'Account',
-        await accountAPI.getAccount(this.model.id)
-      )
-      this.model = localStorage.getItem('Account')
+      const localAccount = localStorage.getItem('Account')
+      if (localAccount) {
+        this.account = localAccount
+        if (localAccount.id) {
+          try {
+            this.account = await accountAPI.getAccount(this.account.id)
+            localStorage.setItem('Account', this.account)
+          } catch (e) {
+            console.log(`failed to get Account from on line`, e)
+          }
+        }
+      }
       this.loading = false
     },
     clearForm() {
       this.loading = true
-      this.model = Object.assign({}, account)
+      this.account = Object.assign({}, cleanAccount)
       this.loading = false
     },
-    updateBody() {}
+    async createAccount() {
+      this.account = await accountAPI.createAccount(this.account)
+    }
     // updateTime() {
     //   this.time = moment(this.model.start).fromNow("mm");
     // },
