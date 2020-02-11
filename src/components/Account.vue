@@ -4,61 +4,82 @@
     <b-alert :show="loading" variant="info">Loading...</b-alert>
     <b-row>
       <b-col sm="12">
-        <b-card>
-          <b-card-title>Account</b-card-title>
-          <b-input
-            type="text"
-            v-model="account.uname"
-            placeholder="UserName"
-            v-if="!account.id"
-          ></b-input>
-          <b-card-text
-            v-else
-            type="text"
-            v-model="account.uname"
-            placeholder="User Name"
-          ></b-card-text>
-        </b-card>
+        <b-card-title>{{ create }}Account Name</b-card-title>
+        <b-input
+          type="text"
+          v-model="account.uname"
+          placeholder="UserName"
+          v-if="!account.id"
+          required
+        ></b-input>
+        <b-card-text
+          v-else
+          type="text"
+          v-model="account.uname"
+          placeholder="User Name"
+        ></b-card-text>
       </b-col>
       <b-col sm="12" md="6" lg="4">
-        <b-card>
-          <b-card-title>Name</b-card-title>
-          <b-card-text>First</b-card-text>
-          <b-input
-            type="text"
-            v-model="account.fname"
-            placeholder="First"
-          ></b-input>
-          <b-card-text>Middle</b-card-text>
-          <b-input
-            type="text"
-            v-model="account.mname"
-            placeholder="Middle"
-          ></b-input>
-          <b-card-text>Last</b-card-text>
-          <b-input
-            type="text"
-            v-model="account.lname"
-            placeholder="Last"
-          ></b-input>
-        </b-card>
+        <b-card-title>Name</b-card-title>
+
+        <b-input
+          type="text"
+          v-model="account.fname"
+          placeholder="First"
+        ></b-input>
+        <b-card-text>First</b-card-text>
+        <b-input
+          type="text"
+          v-model="account.mname"
+          placeholder="Middle"
+        ></b-input>
+        <b-card-text>Middle</b-card-text>
+
+        <b-input
+          type="text"
+          v-model="account.lname"
+          placeholder="Last"
+        ></b-input>
+        <b-card-text>Last</b-card-text>
       </b-col>
       <b-col sm="12" md="6" lg="4">
-        <b-card>
-          <b-card-title>Profile</b-card-title>
-          <b-card-text>Email</b-card-text>
-          <b-input
-            type="email"
-            v-model="account.email"
-            placeholder="Email"
-          ></b-input>
-          <b-card-text>Address</b-card-text>
-          <b-input
-            type="text"
-            v-model="account.address"
-            placeholder="Mailing Address"
-          ></b-input>
-        </b-card>
+        <b-card-title>Profile</b-card-title>
+
+        <b-input
+          type="email"
+          v-model="account.email"
+          placeholder="Email"
+        ></b-input>
+        <b-card-text>Email</b-card-text>
+
+        <b-input
+          type="text"
+          v-model="account.address"
+          placeholder="Mailing Address"
+        ></b-input>
+        <b-card-text>Address</b-card-text>
+      </b-col>
+      <b-col sm="12" md="6" lg="4">
+        <b-card-title>Password</b-card-title>
+
+        <b-input
+          type="password"
+          v-model="password.password"
+          placeholder="new password"
+          @blur="matchPasswords"
+        ></b-input>
+        <b-card-text>New password</b-card-text>
+
+        <b-input
+          type="password"
+          v-model="password.confirm"
+          placeholder="confirm password"
+          @blur="matchPasswords"
+        ></b-input>
+        <b-card-text>Confirm Password</b-card-text>
+        <b-button type="button" @click="upcertPassword" variant="success">
+          Update Password
+        </b-button>
       </b-col>
     </b-row>
     <b-row>
@@ -78,7 +99,7 @@
 </template>
 
 <script>
-import { accountAPI } from '@/api'
+import { accountAPI, passwordAPI } from '@/api'
 let cleanAccount = {
   uname: '',
   fname: '',
@@ -87,11 +108,14 @@ let cleanAccount = {
   address: '',
   email: ''
 }
+let cleanPassword = { password: '', confirm: '' }
 export default {
   data() {
     return {
       loading: false,
-      account: Object.assign({}, cleanAccount)
+      account: Object.assign({}, cleanAccount),
+      password: Object.assign({}, cleanPassword),
+      state: 'Create'
     }
   },
   async created() {
@@ -121,6 +145,23 @@ export default {
     },
     async createAccount() {
       this.account = await accountAPI.createAccount(this.account)
+      this.refreshForm()
+    },
+    matchPasswords() {},
+    async upcertPassword() {
+      //get password from account id
+      let pass
+      try {
+        pass = passwordAPI.getPasswordByAccountId(this.account.id)
+      } catch (e) {
+        console.error(e)
+      }
+      if (pass) {
+        pass = passwordAPI.updatePassword(this.account.id, this.password)
+      } else {
+        pass = passwordAPI.createPassword(this.password)
+      }
+      this.password = pass
     }
     // updateTime() {
     //   this.time = moment(this.model.start).fromNow("mm");

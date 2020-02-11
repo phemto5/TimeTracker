@@ -3,29 +3,37 @@
     <h1 class="h1">Login</h1>
     <b-alert :show="loading" variant="info">Loading...</b-alert>
     <b-row>
-      <b-col sm="12" md="6" lg="8" xl="10">
-        <b-form @submit="login" @reset="clearForm">
-          <b-form-group id="login" label="LoginName" label-for="login">
-            <b-form-input
-              id="login"
-              v-model="model.uname"
-              type="text"
-              required
-              placeholder="UserName"
-            ></b-form-input>
-          </b-form-group>
-          <b-form-group id="pass" label="Password" label-for="pass">
-            <b-form-input
-              id="pass"
-              v-model="model.password"
-              type="password"
-              required
-              placeholder="Password"
-            ></b-form-input>
-          </b-form-group>
-          <b-button type="submit" variant="primary">Login</b-button>
-          <b-button type="reset" variant="danger">Clear</b-button>
-        </b-form>
+      <b-col sm="12" md="8">
+        <b-card>
+          <b-form @submit="login" @reset="clearForm">
+            <b-form-group id="login" label="LoginName" label-for="login">
+              <b-form-input
+                id="login"
+                v-model="model.uname"
+                type="text"
+                required
+                placeholder="UserName"
+              ></b-form-input>
+            </b-form-group>
+            <b-form-group id="pass" label="Password" label-for="pass">
+              <b-form-input
+                id="pass"
+                v-model="model.password"
+                type="password"
+                required
+                placeholder="Password"
+              ></b-form-input>
+            </b-form-group>
+            <b-button type="submit" variant="primary">Login</b-button>
+            <b-button type="reset" variant="danger">Clear</b-button>
+          </b-form>
+        </b-card>
+      </b-col>
+      <b-col sm="12" md="4">
+        <b-card>
+          <p>If you are new to the site please create a new account.</p>
+          <b-button @click="createAccount">Create Account</b-button>
+        </b-card>
       </b-col>
     </b-row>
   </div>
@@ -60,6 +68,9 @@ export default {
       this.loading = false
     },
     clearForm() {},
+    createAccount() {
+      router.push({ name: 'Account Managment' })
+    },
     async login() {
       let token = { msg: '', account: null, token: null, expires: null }
       token = await loginAPI.login(this.model.uname, this.model.password)

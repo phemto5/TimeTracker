@@ -27,6 +27,27 @@ export const loginAPI = {
     return this.execute('post', '/login', data)
   }
 }
+export const passwordAPI = {
+  execute: exebase,
+  getPassword() {
+    return this.execute('get', '/password')
+  },
+  getPassword(id) {
+    return this.execute('get', `/password/${id}`)
+  },
+  getPasswordByAccountId(unameid) {
+    return this.execute('get', `/password?accountid=${unameid}`)
+  },
+  createPassword(data) {
+    return this.execute('post', '/password', data)
+  },
+  updatePassword(id, data) {
+    return this.execute('put', `/password/${id}`, data)
+  },
+  deletePassword(id) {
+    return this.execute('delete', `/password/${id}`)
+  }
+}
 export const accountAPI = {
   execute: exebase,
   getAccount() {
@@ -35,12 +56,6 @@ export const accountAPI = {
   getAccount(id) {
     return this.execute('get', `/account/${id}`)
   },
-  // getAccountByUserName(name) {
-  //   return this.execute('get', `/account/user/${name}`)
-  // },
-  // getLoginToken(name, passhash) {
-  //   return this.execute('get', `/account/token/${name}/${passhash}`)
-  // },
   createAccount(data) {
     return this.execute('post', '/account', data)
   },
