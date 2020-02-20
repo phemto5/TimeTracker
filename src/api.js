@@ -39,7 +39,7 @@ export const passwordAPI = {
     return this.execute('get', `/password/${id}`)
   },
   getPasswordByAccountId(unameid) {
-    return this.execute('get', `/password?accountid=${unameid}`)
+    return this.execute('get', `/password?unameid=${unameid}`)
   },
   createPassword(data) {
     return this.execute('post', '/password', data)
@@ -75,7 +75,7 @@ export const chunkAPI = {
     return this.execute('get', '/chunks')
   },
   getChunksByAccount(account) {
-    return this.execute('get', `/chunks?accountid=${account}`)
+    return this.execute('get', `/chunks?owner=${account}`)
   },
   getChunk(id) {
     return this.execute('get', `/chunks/${id}`)
