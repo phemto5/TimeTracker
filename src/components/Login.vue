@@ -9,7 +9,7 @@
             <b-form-group id="login" label="LoginName" label-for="login">
               <b-form-input
                 id="login"
-                v-model="model.uname"
+                v-model="account.uname"
                 type="text"
                 required
                 placeholder="UserName"
@@ -18,7 +18,7 @@
             <b-form-group id="pass" label="Password" label-for="pass">
               <b-form-input
                 id="pass"
-                v-model="model.password"
+                v-model="password.password"
                 type="password"
                 required
                 placeholder="Password"
@@ -49,22 +49,31 @@ let account = {
   mname: '',
   address: '',
   email: '',
+  id: 0
+}
+let password = {
+  unameid: 0,
   password: ''
 }
 export default {
   data() {
     return {
       loading: false,
-      model: Object.assign({}, account)
+      account: Object.assign({}, account),
+      password: Object.assign({}, password)
     }
   },
   async created() {
     this.refreshForm()
   },
   methods: {
-    refreshForm() {
+    refreshForm(failed = false) {
       this.loading = true
-      this.clearForm()
+      if (!failed) {
+        this.clearForm()
+      } else {
+        console.log('Password or Username not correct')
+      }
       this.loading = false
     },
     clearForm() {},
@@ -72,13 +81,20 @@ export default {
       router.push({ name: 'Account Managment' })
     },
     async login() {
-      let token = { msg: '', account: null, token: null, expires: null }
-      token = await loginAPI.login(this.model.uname, this.model.password)
-      if (token.account) {
+      console.log('Logging in')
+      let token = { msg: '', accountId: null, token: null, expires: null }
+      token = await loginAPI.login(this.account.uname, this.password.password)
+      if (token.accountId && token.accountId > 0) {
         localStorage.setItem('loggedin', true)
         localStorage.setItem('token', token.token)
         localStorage.setItem('expires', token.expires)
-        localStorage.setItem('account', token.account)
+        localStorage.setItem('accountId', token.accountId)
+        try {
+          this.account = await accountAPI.getAccount(token.accountId)
+          localStorage.setItem('account', JSON.stringify(this.account))
+        } catch (e) {
+          console.log(`Could not load Account`)
+        }
         router.push({ name: 'Timer' })
       } else {
         this.refreshForm()

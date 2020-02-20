@@ -13,6 +13,7 @@
               <th>Customer</th>
               <th>Desctiption</th>
               <th>Tags</th>
+              <th>Owner</th>
               <th>&nbsp;</th>
             </tr>
           </thead>
@@ -24,6 +25,7 @@
               <td>{{ chunk.customer }}</td>
               <td>{{ chunk.body }}</td>
               <td>{{ chunk.tag }}</td>
+              <td>{{ chunk.owner }}</td>
               <td class="text-right">
                 <a href="#" @click.prevent="populateChunkToEdit(chunk)">Edit</a>
                 <a href="#" @click.prevent="deleteChunk(chunk.id)">Delete</a>
@@ -33,16 +35,19 @@
         </table>
       </b-col>
       <b-col lg="3">
-        <b-card :title="model.id ? 'Edit Post ID#' + model.id : 'New Post'">
+        <b-card :title="chunk.id ? 'Edit Post ID#' + chunk.id : 'New Post'">
           <form @submit.prevent="saveChunk">
             <b-form-group label="Customer">
-              <b-form-select v-model="model.customer" :options="customers"></b-form-select>
+              <b-form-select
+                v-model="chunk.customer"
+                :options="customers"
+              ></b-form-select>
             </b-form-group>
             <b-form-group label="Description">
-              <b-form-textarea rows="4" v-model="model.body"></b-form-textarea>
+              <b-form-textarea rows="4" v-model="chunk.body"></b-form-textarea>
             </b-form-group>
             <b-form-group label="Tags">
-              <b-form-input type="text" v-model="model.tag"></b-form-input>
+              <b-form-input type="text" v-model="chunk.tag"></b-form-input>
             </b-form-group>
             <div>
               <b-button type="submit" variant="success">Save</b-button>
@@ -55,75 +60,78 @@
 </template>
 
 <script>
-import { chunkAPI, customerAPI } from "@/api";
+import { chunkAPI, customerAPI } from '@/api'
+import router from '../router'
+
 const NewChunk = {
   start: new Date(),
   open: true
-};
-// let map = customers => {
-//   let options = [];
-//   customers.forEach(customer => {
-//     options.push({
-//       value: customer.id,
-//       text: customer.name
-//     });
-//   });
-//   return options;
-// };
+}
 
 export default {
   data() {
-    return { loading: false, chunks: [], customers: [], model: NewChunk };
+    return {
+      loading: false,
+      chunks: [],
+      customers: [],
+      chunk: NewChunk,
+      account: {}
+    }
   },
   async created() {
-    this.refreshChunks();
+    this.refreshChunks()
   },
   methods: {
     async refreshChunks() {
-      this.loading = true;
-      let custs = await customerAPI.getCustomers();
+      let localAccount = JSON.parse(localStorage.getItem('account'))
+      if (!localAccount) {
+        router.push({ name: 'Login' })
+      } else {
+        this.account = localAccount
+      }
+      this.loading = true
+      let custs = await customerAPI.getCustomers()
       this.customers = custs.map(cust => {
-        return { value: cust.id, text: cust.name };
-      });
-      let chks = await chunkAPI.getChunks();
+        return { value: cust.id, text: cust.name }
+      })
+      // let chks = await chunkAPI.getChunks()
+      let chks = await chunkAPI.getChunksByAccount(this.account.id)
       this.chunks = chks.map(chunk => {
-        let c = custs.filter(cust => cust.id === chunk.customer);
+        let c = custs.filter(cust => cust.id === chunk.customer)
         if (c.length != 0) {
-          chunk.customer = c[0].name;
+          chunk.customer = c[0].name
         }
-        return chunk;
-      });
-      this.loading = false;
+        return chunk
+      })
+      this.loading = false
     },
     async populateChunkToEdit(chunk) {
-      let selected = this.customers.filter(
-        cust => cust.text === chunk.customer
-      );
-      this.model = Object.assign({}, chunk);
+      let selected = this.customers.filter(cust => cust.text === chunk.customer)
+      this.chunk = Object.assign({}, chunk)
       if (selected.length != 0) {
-        this.model = Object.assign(this.model, { customer: selected[0].value });
+        this.chunk = Object.assign(this.chunk, { customer: selected[0].value })
       }
     },
     async saveChunk() {
-      this.model.open = false;
-      this.model.stop = new Date();
-      if (this.model.id) {
-        await chunkAPI.updateChunk(this.model.id, this.model);
+      this.chunk.open = false
+      this.chunk.stop = new Date()
+      if (this.chunk.id) {
+        await chunkAPI.updateChunk(this.chunk.id, this.chunk)
       } else {
-        await chunkAPI.createChunk(this.model);
+        await chunkAPI.createChunk(this.chunk)
       }
-      this.model = NewChunk;
-      await this.refreshChunks();
+      this.chunk = NewChunk
+      await this.refreshChunks()
     },
     async deleteChunk(id) {
-      if (confirm("Are you sure you want to delete it ???")) {
-        if (this.model.id === id) {
-          this.model = NewChunk;
+      if (confirm('Are you sure you want to delete it ???')) {
+        if (this.chunk.id === id) {
+          this.chunk = NewChunk
         }
-        await chunkAPI.deleteChunk(id);
-        await this.refreshChunks();
+        await chunkAPI.deleteChunk(id)
+        await this.refreshChunks()
       }
     }
   }
-};
+}
 </script>

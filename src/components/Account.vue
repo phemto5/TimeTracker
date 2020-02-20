@@ -1,10 +1,10 @@
 <template>
   <div class="container-fluid mt-4">
-    <h1 class="h1">Account</h1>
+    <h1 class="h1">{{ state }} Account</h1>
     <b-alert :show="loading" variant="info">Loading...</b-alert>
     <b-row>
       <b-col sm="12">
-        <b-card-title>{{ create }}Account Name</b-card-title>
+        <b-card-title>Account Name</b-card-title>
         <b-input
           type="text"
           v-model="account.uname"
@@ -12,16 +12,12 @@
           v-if="!account.id"
           required
         ></b-input>
-        <b-card-text
-          v-else
-          type="text"
-          v-model="account.uname"
-          placeholder="User Name"
-        ></b-card-text>
+        <b-card-text v-else type="text" placeholder="User Name">
+          <h3>{{ account.uname }}</h3></b-card-text
+        >
       </b-col>
       <b-col sm="12" md="6" lg="4">
         <b-card-title>Name</b-card-title>
-
         <b-input
           type="text"
           v-model="account.fname"
@@ -77,36 +73,54 @@
           @blur="matchPasswords"
         ></b-input>
         <b-card-text>Confirm Password</b-card-text>
-        <b-button type="button" @click="upcertPassword" variant="success">
+        <b-button
+          v-if="state != 'Create'"
+          type="button"
+          @click="upcertPassword"
+          variant="success"
+        >
           Update Password
         </b-button>
       </b-col>
     </b-row>
     <b-row>
       <b-col sm="12">
-        <b-button type="button" @click="createAccount" variant="success">
-          Save
-        </b-button>
-        <b-button type="button" @click="refreshForm" variant="warning">
-          Refresh
-        </b-button>
-        <b-button type="button" @click="clearForm" variant="danger">
-          Clear
-        </b-button>
+        <b-card>
+          <b-button
+            v-if="state == 'Create'"
+            type="button"
+            @click="createAccount"
+            variant="success"
+          >
+            Create
+          </b-button>
+          <b-button
+            type="button"
+            v-if="state != 'Create'"
+            @click="refreshForm"
+            variant="warning"
+          >
+            Reload
+          </b-button>
+          <b-button type="button" @click="clearForm" variant="danger">
+            Discard
+          </b-button>
+        </b-card>
       </b-col>
     </b-row>
   </div>
 </template>
 
 <script>
-import { accountAPI, passwordAPI } from '@/api'
+import { accountAPI, passwordAPI, loginAPI } from '@/api'
 let cleanAccount = {
   uname: '',
   fname: '',
   lname: '',
   mname: '',
   address: '',
-  email: ''
+  email: '',
+  id: 0
 }
 let cleanPassword = { password: '', confirm: '' }
 export default {
@@ -124,17 +138,24 @@ export default {
   methods: {
     async refreshForm() {
       this.loading = true
-      const localAccount = localStorage.getItem('Account')
-      if (localAccount) {
-        this.account = localAccount
-        if (localAccount.id) {
+      const localAccountId = localStorage.getItem('accountId')
+      if (localAccountId) {
+        const localAccount = JSON.parse(localStorage.getItem('account'))
+        this.state = 'Local'
+        if (!localAccount) {
           try {
-            this.account = await accountAPI.getAccount(this.account.id)
-            localStorage.setItem('Account', this.account)
+            this.account = await accountAPI.getAccount(localAccountId)
+            localStorage.setItem('account', this.account)
+            this.state = 'Online'
           } catch (e) {
-            console.log(`failed to get Account from on line`, e)
+            console.log(`failed to get Account from online`, e)
+            this.state = 'Offline'
           }
+        } else {
+          this.account = this.account.id = localAccountId
         }
+      } else {
+        this.account = cleanAccount
       }
       this.loading = false
     },
@@ -144,7 +165,16 @@ export default {
       this.loading = false
     },
     async createAccount() {
-      this.account = await accountAPI.createAccount(this.account)
+      if (this.password.password == this.password.confirm) {
+        let md5p = loginAPI.hashPassword(this.password.password)
+        this.account = await accountAPI.createAccount(this.account)
+        localStorage.setItem('account', JSON.stringify(this.account))
+        localStorage.setItem('accountid', this.account.id)
+        this.password = await passwordAPI.createPassword({
+          unameid: this.account.id,
+          password: md5p
+        })
+      }
       this.refreshForm()
     },
     matchPasswords() {},
@@ -156,6 +186,7 @@ export default {
       } catch (e) {
         console.error(e)
       }
+      this.password.password = LoginAPI.hashPassword(this.password.password)
       if (pass) {
         pass = passwordAPI.updatePassword(this.account.id, this.password)
       } else {

@@ -31,8 +31,12 @@
               <td>{{ contact.emails }}</td>
               <td>{{ contact.webSites }}</td>
               <td class="text-right">
-                <a href="#" @click.prevent="populateContactToEdit(contact)">Edit</a>
-                <a href="#" @click.prevent="deleteContact(contact.id)">Delete</a>
+                <a href="#" @click.prevent="populateContactToEdit(contact)"
+                  >Edit</a
+                >
+                <a href="#" @click.prevent="deleteContact(contact.id)"
+                  >Delete</a
+                >
               </td>
             </tr>
           </tbody>
@@ -42,9 +46,21 @@
         <b-card :title="model.id ? 'Edit Post ID#' + model.id : 'New Post'">
           <form @submit.prevent="saveContact">
             <b-form-group label="Contact Name">
-              <b-form-input type="text" placeholder="First Name" v-model="model.fname"></b-form-input>
-              <b-form-input type="text" placeholder="Middle Name" v-model="model.mname"></b-form-input>
-              <b-form-input type="text" placeholder="Last Name" v-model="model.lname"></b-form-input>
+              <b-form-input
+                type="text"
+                placeholder="First Name"
+                v-model="model.fname"
+              ></b-form-input>
+              <b-form-input
+                type="text"
+                placeholder="Middle Name"
+                v-model="model.mname"
+              ></b-form-input>
+              <b-form-input
+                type="text"
+                placeholder="Last Name"
+                v-model="model.lname"
+              ></b-form-input>
             </b-form-group>
             <b-form-group label="Customer Name">
               <b-form-select
@@ -77,63 +93,69 @@
 </template>
 
 <script>
-import { contactAPI, customerAPI } from "@/api";
-const NewContact = Object.assign({});
+import { contactAPI, customerAPI } from '@/api'
+import router from '../router'
+const NewContact = Object.assign({})
+
 export default {
   data() {
-    return { loading: false, contacts: [], customers: [], model: NewContact };
+    return { loading: false, contacts: [], customers: [], model: NewContact }
   },
   async created() {
-    this.refreshContacts();
+    let localAccount = JSON.parse(localStorage.getItem('account'))
+    if (!localAccount) {
+      router.push({ name: 'Login' })
+    }
+    this.refreshContacts()
   },
   methods: {
     async refreshContacts() {
-      this.loading = true;
-      let custs = await customerAPI.getCustomers();
+      this.loading = true
+      let custs = await customerAPI.getCustomers()
       this.customers = custs.map(cust => {
-        return { value: cust.id, text: cust.name };
-      });
-      let conts = await contactAPI.getContacts();
+        return { value: cust.id, text: cust.name }
+      })
+      let conts = await contactAPI.getContacts()
       this.contacts = conts.map(cont => {
         if (custs.length != 0) {
-          let c = custs.filter(cust => cust.id === cont.customerId);
+          let c = custs.filter(cust => cust.id === cont.customerId)
           if (c.length != 0) {
-            cont.customerId = c[0].name;
+            cont.customerId = c[0].name
           }
         }
-        return cont;
-      });
-      this.loading = false;
+        return cont
+      })
+      this.loading = false
     },
     async populateContactToEdit(contact) {
       let selected = this.customers.filter(
         cust => cust.text === contact.customerId
-      );
-      this.model = Object.assign({}, contact);
+      )
+      this.model = Object.assign({}, contact)
       if (selected.length != 0) {
         this.model = Object.assign(this.model, {
           customerId: selected[0].value
-        });
+        })
       }
     },
     async saveContact() {
       if (this.model.id) {
-        await contactAPI.updateContact(this.model.id, this.model);
+        await contactAPI.updateContact(this.model.id, this.model)
       } else {
-        await contactAPI.createContact(this.model);
+        await contactAPI.createContact(this.model)
       }
-      this.model = NewContact;
-      await this.refreshContacts();
+      this.model = NewContact
+      await this.refreshContacts()
     },
     async deleteContact(id) {
-      if (confirm("Are you sure you want to delete it ???")) {
+      if (confirm('Are you sure you want to delete it ???')) {
         if (this.model.id === id) {
-          this.model = NewContact;
+          this.model = NewContact
         }
-        await contactAPI.deleteContact(id);
-        await this.refreshContacts();
+        await contactAPI.deleteContact(id)
+        await this.refreshContacts()
       }
     }
   }
-};
+}
 </script>

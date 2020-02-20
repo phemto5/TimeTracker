@@ -1,4 +1,3 @@
-// import Vue from 'vue'
 import axios from 'axios'
 import * as md5 from 'md5'
 
@@ -21,8 +20,12 @@ const exebase = async (method, resource, data) => {
 }
 export const loginAPI = {
   execute: exebase,
-  login(username, password) {
+  hashPassword(password) {
     let md5p = md5(password)
+    return md5p
+  },
+  login(username, password) {
+    let md5p = this.hashPassword(password)
     let data = { uname: username, pass: md5p }
     return this.execute('post', '/login', data)
   }
@@ -70,6 +73,9 @@ export const chunkAPI = {
   execute: exebase,
   getChunks() {
     return this.execute('get', '/chunks')
+  },
+  getChunksByAccount(account) {
+    return this.execute('get', `/chunks?accountid=${account}`)
   },
   getChunk(id) {
     return this.execute('get', `/chunks/${id}`)
