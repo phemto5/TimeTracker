@@ -54,6 +54,7 @@ import { chunkAPI } from '@/api'
 import router from '../router'
 import * as moment from 'moment'
 import AccountVue from './Account.vue'
+import { CheckLoggedIn } from '../auth'
 
 let timer = Object.assign({
   start: null,
@@ -80,11 +81,12 @@ export default {
   methods: {
     refreshForm() {
       this.loading = true
-      let localAccount = JSON.parse(localStorage.getItem('account'))
-      this.account = localAccount
-      if (!localAccount) {
-        router.push({ name: 'Login' })
-      }
+      CheckLoggedIn(
+        () => {},
+        () => {
+          router.push({ name: 'Login' })
+        }
+      )
       this.timer = timer
       this.loading = false
     },

@@ -95,6 +95,14 @@
             Create
           </b-button>
           <b-button
+            v-if="state != 'Create'"
+            type="button"
+            @click="updateAccount"
+            variant="success"
+          >
+            Update
+          </b-button>
+          <b-button
             type="button"
             v-if="state != 'Create'"
             @click="refreshForm"
@@ -113,13 +121,14 @@
 
 <script>
 import { accountAPI, passwordAPI, loginAPI } from '@/api'
+import { CheckLoggedIn } from '../auth'
 let cleanAccount = {
   uname: '',
   fname: '',
   lname: '',
   mname: '',
-  address: '',
-  email: '',
+  address: 0,
+  email: 0,
   id: 0
 }
 let cleanPassword = { password: '', confirm: '' }
@@ -133,26 +142,32 @@ export default {
     }
   },
   async created() {
+    this.isLoggedIn(
+      () => {},
+      () => {
+        router.push({ name: 'Login' })
+      }
+    )
     this.refreshForm()
   },
   methods: {
+    isLoggedIn(suc, fail) {
+      CheckLoggedIn(suc, fail)
+    },
     async refreshForm() {
       this.loading = true
       const localAccountId = localStorage.getItem('accountId')
       if (localAccountId) {
-        const localAccount = JSON.parse(localStorage.getItem('account'))
+        this.account = cleanAccount
+        this.account = JSON.parse(localStorage.getItem('account'))
         this.state = 'Local'
-        if (!localAccount) {
-          try {
-            this.account = await accountAPI.getAccount(localAccountId)
-            localStorage.setItem('account', this.account)
-            this.state = 'Online'
-          } catch (e) {
-            console.log(`failed to get Account from online`, e)
-            this.state = 'Offline'
-          }
-        } else {
-          this.account = this.account.id = localAccountId
+        try {
+          this.account = await accountAPI.getAccount(localAccountId)
+          localStorage.setItem('account', JSON.stringify(this.account))
+          this.state = 'Online'
+        } catch (e) {
+          console.log(`failed to get Account from online`, e)
+          this.state = 'Offline'
         }
       } else {
         this.account = cleanAccount
@@ -175,7 +190,19 @@ export default {
           password: md5p
         })
       }
-      this.refreshForm()
+      window.location.reload()
+    },
+    async updateAccount() {
+      try {
+        this.account = await accountAPI.updateAccount(
+          this.account.id,
+          this.account
+        )
+        console.log(`updated the account`)
+        this.refreshForm()
+      } catch (e) {
+        consol.error(e)
+      }
     },
     matchPasswords() {},
     async upcertPassword() {

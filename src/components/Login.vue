@@ -42,6 +42,7 @@
 <script>
 import { accountAPI, loginAPI } from '@/api'
 import router from '../router'
+import { CheckLoggedIn } from '../auth'
 let account = {
   uname: '',
   fname: '',
@@ -60,13 +61,27 @@ export default {
     return {
       loading: false,
       account: Object.assign({}, account),
-      password: Object.assign({}, password)
+      password: Object.assign({}, password),
+      warn: false
     }
   },
   async created() {
+    this.isLoggedIn(
+      () => {
+        router.push({ name: 'Timer' })
+      },
+      () => {
+        this.clearForm()
+        this.warn = true
+      }
+    )
     this.refreshForm()
   },
   methods: {
+    isLoggedIn(suc, fail) {
+      CheckLoggedIn(suc, fail)
+    },
+
     refreshForm(failed = false) {
       this.loading = true
       if (!failed) {
@@ -95,9 +110,12 @@ export default {
         } catch (e) {
           console.log(`Could not load Account`)
         }
-        router.push({ name: 'Timer' })
+        window.location.reload()
+        console.log(`Reloading Window`)
       } else {
         this.refreshForm()
+        localStorage.clear()
+        console.log(`Failed to Login `, token)
       }
     }
   }
