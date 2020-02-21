@@ -73,56 +73,62 @@
 </template>
 
 <script>
-import { customerAPI, contactAPI } from "@/api";
-const NewCustomer = Object.assign({});
+import { customerAPI, contactAPI } from '@/api'
+import router from '../router'
+const NewCustomer = Object.assign({})
+
 export default {
   data() {
     return {
       loading: false,
       customers: [],
       model: NewCustomer
-    };
+    }
   },
   async created() {
-    this.refreshCustomers();
+    let localAccount = JSON.parse(localStorage.getItem('account'))
+    if (!localAccount) {
+      router.push({ name: 'Login' })
+    }
+    this.refreshCustomers()
   },
   methods: {
     async refreshCustomers() {
-      this.loading = true;
-      this.contacts = await contactAPI.getContacts();
-      this.customers = await customerAPI.getCustomers();
+      this.loading = true
+      this.contacts = await contactAPI.getContacts()
+      this.customers = await customerAPI.getCustomers()
       this.customers.forEach(cust => {
         let custCon = this.contacts.filter(
           contact => contact.customerId == cust.id
-        );
+        )
         cust.contacts = custCon.reduce(
-          (list, con) => list + "'" + con.fname + " " + con.lname + "'",
-          ""
-        );
-      });
-      this.loading = false;
+          (list, con) => list + "'" + con.fname + ' ' + con.lname + "'",
+          ''
+        )
+      })
+      this.loading = false
     },
     async populateCustomerToEdit(customer) {
-      this.model = Object.assign({}, customer);
+      this.model = Object.assign({}, customer)
     },
     async saveCustomer() {
       if (this.model.id) {
-        await customerAPI.updateCustomer(this.model.id, this.model);
+        await customerAPI.updateCustomer(this.model.id, this.model)
       } else {
-        await customerAPI.createCustomer(this.model);
+        await customerAPI.createCustomer(this.model)
       }
-      this.model = NewCustomer;
-      await this.refreshCustomers();
+      this.model = NewCustomer
+      await this.refreshCustomers()
     },
     async deleteCustomer(id) {
-      if (confirm("Are you sure you want to delete it ???")) {
+      if (confirm('Are you sure you want to delete it ???')) {
         if (this.model.id === id) {
-          this.model = NewCustomer;
+          this.model = NewCustomer
         }
-        await customerAPI.deleteCustomer(id);
-        await this.refreshCustomers();
+        await customerAPI.deleteCustomer(id)
+        await this.refreshCustomers()
       }
     }
   }
-};
+}
 </script>

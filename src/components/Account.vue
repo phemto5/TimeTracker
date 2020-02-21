@@ -1,75 +1,204 @@
-
 <template>
   <div class="container-fluid mt-4">
-    <h1 class="h1">Account</h1>
+    <h1 class="h1">{{ state }} Account</h1>
     <b-alert :show="loading" variant="info">Loading...</b-alert>
     <b-row>
-      <b-col sm="12" md="6" lg="8" xl="10">
+      <b-col sm="12">
+        <b-card-title>Account Name</b-card-title>
+        <b-input
+          type="text"
+          v-model="account.uname"
+          placeholder="UserName"
+          v-if="!account.id"
+          required
+        ></b-input>
+        <b-card-text v-else type="text" placeholder="User Name">
+          <h3>{{ account.uname }}</h3></b-card-text
+        >
+      </b-col>
+      <b-col sm="12" md="6" lg="4">
+        <b-card-title>Name</b-card-title>
+        <b-input
+          type="text"
+          v-model="account.fname"
+          placeholder="First"
+        ></b-input>
+        <b-card-text>First</b-card-text>
+        <b-input
+          type="text"
+          v-model="account.mname"
+          placeholder="Middle"
+        ></b-input>
+        <b-card-text>Middle</b-card-text>
+
+        <b-input
+          type="text"
+          v-model="account.lname"
+          placeholder="Last"
+        ></b-input>
+        <b-card-text>Last</b-card-text>
+      </b-col>
+      <b-col sm="12" md="6" lg="4">
+        <b-card-title>Profile</b-card-title>
+
+        <b-input
+          type="email"
+          v-model="account.email"
+          placeholder="Email"
+        ></b-input>
+        <b-card-text>Email</b-card-text>
+
+        <b-input
+          type="text"
+          v-model="account.address"
+          placeholder="Mailing Address"
+        ></b-input>
+        <b-card-text>Address</b-card-text>
+      </b-col>
+      <b-col sm="12" md="6" lg="4">
+        <b-card-title>Password</b-card-title>
+
+        <b-input
+          type="password"
+          v-model="password.password"
+          placeholder="new password"
+          @blur="matchPasswords"
+        ></b-input>
+        <b-card-text>New password</b-card-text>
+
+        <b-input
+          type="password"
+          v-model="password.confirm"
+          placeholder="confirm password"
+          @blur="matchPasswords"
+        ></b-input>
+        <b-card-text>Confirm Password</b-card-text>
+        <b-button
+          v-if="state != 'Create'"
+          type="button"
+          @click="upcertPassword"
+          variant="success"
+        >
+          Update Password
+        </b-button>
+      </b-col>
+    </b-row>
+    <b-row>
+      <b-col sm="12">
         <b-card>
-          <b-card-title>Profile</b-card-title>
-          <b-card-text></b-card-text>
-          <b-input
-            type="text"
-            v-model="model.username"
-            placeholder="User Name"
-            @blur="updateBody"
-          ></b-input>
-          <b-input
-            type="password"
-            v-model="model.password"
-            placeholder="Password"
-            @blur="updateBody"
-          ></b-input>
+          <b-button
+            v-if="state == 'Create'"
+            type="button"
+            @click="createAccount"
+            variant="success"
+          >
+            Create
+          </b-button>
+          <b-button
+            type="button"
+            v-if="state != 'Create'"
+            @click="refreshForm"
+            variant="warning"
+          >
+            Reload
+          </b-button>
+          <b-button type="button" @click="clearForm" variant="danger">
+            Discard
+          </b-button>
         </b-card>
       </b-col>
-      <b-row>
-        <b-card>
-          <b-card-title>Profile</b-card-title>
-          <b-card-text></b-card-text>
-          <b-input
-            type="email"
-            v-model="model.email"
-            placeholder="Email"
-            @blur="updateBody"
-          ></b-input>
-        </b-card>
-      </b-row>
     </b-row>
   </div>
 </template>
 
 <script>
-import { accountAPI } from "@/api";
-let account = {
-    username:"",
-    password:"",
-    email:""
+import { accountAPI, passwordAPI, loginAPI } from '@/api'
+let cleanAccount = {
+  uname: '',
+  fname: '',
+  lname: '',
+  mname: '',
+  address: '',
+  email: '',
+  id: 0
 }
+let cleanPassword = { password: '', confirm: '' }
 export default {
   data() {
     return {
       loading: false,
-      model: Object.assign({}, account),
-    };
+      account: Object.assign({}, cleanAccount),
+      password: Object.assign({}, cleanPassword),
+      state: 'Create'
+    }
   },
   async created() {
-    this.refreshForm();
+    this.refreshForm()
   },
   methods: {
-    refreshForm() {
-      this.loading = true;
-      this.model = timer;
-      this.loading = false;
+    async refreshForm() {
+      this.loading = true
+      const localAccountId = localStorage.getItem('accountId')
+      if (localAccountId) {
+        const localAccount = JSON.parse(localStorage.getItem('account'))
+        this.state = 'Local'
+        if (!localAccount) {
+          try {
+            this.account = await accountAPI.getAccount(localAccountId)
+            localStorage.setItem('account', this.account)
+            this.state = 'Online'
+          } catch (e) {
+            console.log(`failed to get Account from online`, e)
+            this.state = 'Offline'
+          }
+        } else {
+          this.account = this.account.id = localAccountId
+        }
+      } else {
+        this.account = cleanAccount
+      }
+      this.loading = false
     },
-    clearForm(){
-        
+    clearForm() {
+      this.loading = true
+      this.account = Object.assign({}, cleanAccount)
+      this.loading = false
+    },
+    async createAccount() {
+      if (this.password.password == this.password.confirm) {
+        let md5p = loginAPI.hashPassword(this.password.password)
+        this.account = await accountAPI.createAccount(this.account)
+        localStorage.setItem('account', JSON.stringify(this.account))
+        localStorage.setItem('accountid', this.account.id)
+        this.password = await passwordAPI.createPassword({
+          unameid: this.account.id,
+          password: md5p
+        })
+      }
+      this.refreshForm()
+    },
+    matchPasswords() {},
+    async upcertPassword() {
+      //get password from account id
+      let pass
+      try {
+        pass = passwordAPI.getPasswordByAccountId(this.account.id)
+      } catch (e) {
+        console.error(e)
+      }
+      this.password.password = LoginAPI.hashPassword(this.password.password)
+      if (pass) {
+        pass = passwordAPI.updatePassword(this.account.id, this.password)
+      } else {
+        pass = passwordAPI.createPassword(this.password)
+      }
+      this.password = pass
     }
     // updateTime() {
     //   this.time = moment(this.model.start).fromNow("mm");
     // },
     // updateBody() {
     //   this.model.body = this.model.body;
-    },
     // async startChunk(evt) {
     //   this.refreshForm();
     //   evt.preventDefault();
@@ -97,8 +226,8 @@ export default {
     //   this.model.open = false;
     //   this.model = await chunkAPI.updateChunk(this.model.id, this.model);
 
-      // this.model = timer;
+    // this.model = timer;
     // }
   }
-};
+}
 </script>
