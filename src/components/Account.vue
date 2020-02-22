@@ -122,6 +122,7 @@
 <script>
 import { accountAPI, passwordAPI, loginAPI } from '@/api'
 import { CheckLoggedIn } from '../auth'
+import router from '../router'
 let cleanAccount = {
   uname: '',
   fname: '',
