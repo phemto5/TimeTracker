@@ -19,7 +19,7 @@ export default new Router({
     },
     {
       path: '/chunks',
-      name: 'Time Managment',
+      name: 'Time',
       component: Chunk,
       meta: {}
     },
@@ -37,19 +37,19 @@ export default new Router({
     },
     {
       path: '/account',
-      name: 'Account Managment',
+      name: 'Account',
       component: Account,
       meta: {}
     },
     {
       path: '/customers',
-      name: 'Customer Managment',
+      name: 'Customer',
       component: Customer,
       meta: {}
     },
     {
       path: '/contacts',
-      name: 'Contact Managment',
+      name: 'Contact',
       component: Contact,
       meta: {}
     }

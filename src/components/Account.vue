@@ -144,9 +144,11 @@ export default {
   },
   async created() {
     this.isLoggedIn(
-      () => {},
       () => {
-        router.push({ name: 'Login' })
+        this.refreshForm()
+      },
+      () => {
+        // router.push({ name: 'Login' })
       }
     )
     this.refreshForm()
