@@ -1,5 +1,5 @@
 export const CheckLoggedIn = (sucsess, failed) => {
-  console.log(`Checking if logged in`)
+  // console.log(`Checking if logged in`)
   localStorage.setItem('loggedin', false)
   let accountId = localStorage.getItem('accountId')
   if (accountId) {
@@ -10,8 +10,10 @@ export const CheckLoggedIn = (sucsess, failed) => {
   }
   if (localStorage.getItem('loggedin') === 'true') {
     // router.push({ name: 'Timer' })
+    console.info('Logged In')
     sucsess()
   } else {
+    console.error('Not Logged in')
     failed()
   }
 }

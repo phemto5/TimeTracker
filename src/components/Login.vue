@@ -93,7 +93,7 @@ export default {
     },
     clearForm() {},
     createAccount() {
-      router.push({ name: 'Account Managment' })
+      router.push({ name: 'Account' })
     },
     async login() {
       console.log('Logging in')
