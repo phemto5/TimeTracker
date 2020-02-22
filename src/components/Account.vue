@@ -193,7 +193,9 @@ export default {
           password: md5p
         })
       }
-      window.location.reload()
+      // window.location.reload()
+      alert('Account Created Please login')
+      router.push({ name: 'Login' })
     },
     async updateAccount() {
       try {
