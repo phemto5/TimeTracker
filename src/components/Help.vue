@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h1>Time Traking Starts Here</h1>
+    <h1 class="PageHead">Time Traking Starts Here</h1>
     <p><em> This is a small app to track time in chunks quickly with some tools to keep it organized as you are moving though a day.</em></p>
     <b-card>
       <b-card-text>

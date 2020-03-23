@@ -1,6 +1,6 @@
 <template>
   <div class="container-fluid mt-4">
-    <h1 class="h1">Timer</h1>
+    <h1 class="PageHead">{{`${entity}`}}</h1>
     <b-alert :show="loading" variant="info">Loading...</b-alert>
     <b-row>
       <b-col sm="12" md="6" lg="8" xl="10">
@@ -67,6 +67,7 @@ let timer = Object.assign({
 export default {
   data() {
     return {
+      entity:`Timer`,
       loading: false,
       timer: timer,
       time: 0,

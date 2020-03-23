@@ -1,3 +1,6 @@
-h1:{
-  background-color: #297E7C;
+.PageHead {
+  background-color: #606d77;
+  color: white;
+  border-radius: 4px;
+  padding: 4px;;
 }
