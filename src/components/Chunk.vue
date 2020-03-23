@@ -1,6 +1,6 @@
 <template>
   <div class="container-fluid mt-4">
-    <h1 class="h1">Time Manger</h1>
+    <h1 class="h1">{{`${entity} Mangement`}}</h1>
     <b-alert :show="loading" variant="info">Loading...</b-alert>
     <b-row>
       <b-col>
@@ -35,7 +35,7 @@
         </table>
       </b-col>
       <b-col lg="3">
-        <b-card :title="chunk.id ? 'Edit Post ID#' + chunk.id : 'New Post'">
+        <b-card :title="chunk.id ? `Edit ${entity} ID#` + model.id : `New ${entity}`">
           <form @submit.prevent="saveChunk">
             <b-form-group label="Customer">
               <b-form-select
@@ -71,6 +71,7 @@ const NewChunk = {
 export default {
   data() {
     return {
+      entity:`Chunk`,
       loading: false,
       chunks: [],
       customers: [],

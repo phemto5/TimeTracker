@@ -1,6 +1,6 @@
 <template>
   <div class="container-fluid mt-4">
-    <h1 class="h1">Customer Manger</h1>
+    <h1 class="h1">{{`${entity} Mangement`}}</h1>
     <b-alert :show="loading" variant="info">Loading...</b-alert>
     <b-row>
       <b-col>
@@ -39,10 +39,10 @@
         </table>
       </b-col>
       <b-col lg="3">
-        <b-card :title="model.id ? 'Edit Post ID#' + model.id : 'New Post'">
+        <b-card :title="customer.id ? `Edit ${entity} ID#` + customer.id : `New ${entity}`">
           <form @submit.prevent="saveCustomer">
             <b-form-group label="Customer Name">
-              <b-form-input type="text" v-model="model.name"></b-form-input>
+              <b-form-input type="text" v-model="customer.name"></b-form-input>
             </b-form-group>
             <b-form-group label="Contacts">
               <!-- <b-list-group>
@@ -80,9 +80,10 @@ const NewCustomer = Object.assign({})
 export default {
   data() {
     return {
+      entity:'Customer',
       loading: false,
       customers: [],
-      model: NewCustomer
+      customer: NewCustomer
     }
   },
   async created() {
@@ -109,21 +110,21 @@ export default {
       this.loading = false
     },
     async populateCustomerToEdit(customer) {
-      this.model = Object.assign({}, customer)
+      this.customer = Object.assign({}, customer)
     },
     async saveCustomer() {
-      if (this.model.id) {
-        await customerAPI.updateCustomer(this.model.id, this.model)
+      if (this.customer.id) {
+        await customerAPI.updateCustomer(this.customer.id, this.customer)
       } else {
-        await customerAPI.createCustomer(this.model)
+        await customerAPI.createCustomer(this.customer)
       }
-      this.model = NewCustomer
+      this.customer = NewCustomer
       await this.refreshCustomers()
     },
     async deleteCustomer(id) {
       if (confirm('Are you sure you want to delete it ???')) {
-        if (this.model.id === id) {
-          this.model = NewCustomer
+        if (this.customer.id === id) {
+          this.customer = NewCustomer
         }
         await customerAPI.deleteCustomer(id)
         await this.refreshCustomers()

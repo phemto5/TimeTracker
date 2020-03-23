@@ -19,6 +19,8 @@
   </div>
 </template>
 <script>
+
+
 export default {
   data() {
     return { name: 'TimeTracker', loggedin: false }

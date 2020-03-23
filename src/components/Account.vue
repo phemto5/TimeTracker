@@ -1,6 +1,6 @@
 <template>
   <div class="container-fluid mt-4">
-    <h1 class="h1">{{ state }} Account</h1>
+    <h1 class="h1">{{`${entity} Mangement`}}</h1>
     <b-alert :show="loading" variant="info">Loading...</b-alert>
     <b-row>
       <b-col sm="12">
@@ -136,6 +136,7 @@ let cleanPassword = { password: '', confirm: '' }
 export default {
   data() {
     return {
+      entity:`Account`,
       loading: false,
       account: Object.assign({}, cleanAccount),
       password: Object.assign({}, cleanPassword),
