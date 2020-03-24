@@ -1,6 +1,8 @@
 <template>
   <div class="container-fluid mt-4">
-    <h1 class="PageHead bg-dark" >{{`${entity}`}}</h1>
+    <h1 class="PageHead bg-dark" >
+      {{ ` Mangement : ${entity} :: ${account.id}-${account.uname}` }}
+</h1>
     <b-alert :show="loading" variant="info">Loading...</b-alert>
     <b-row>
       <b-col sm="12" md="8">

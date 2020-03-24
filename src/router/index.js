@@ -7,6 +7,8 @@ import Contact from '@/components/Contact'
 import Timer from '@/components/Timer'
 import Login from '@/components/Login'
 import Account from '@/components/Account'
+import Address from '@/components/Address'
+import Matter from '@/components/Matter'
 
 Vue.use(Router)
 
@@ -48,9 +50,21 @@ export default new Router({
       meta: {}
     },
     {
+      path: '/address',
+      name: 'Address',
+      component: Address,
+      meta: {}
+    },
+    {
       path: '/contacts',
       name: 'Contact',
       component: Contact,
+      meta: {}
+    },
+    {
+      path: '/matter',
+      name: 'Matter',
+      component: Matter,
       meta: {}
     }
   ]

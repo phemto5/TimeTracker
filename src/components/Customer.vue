@@ -1,6 +1,8 @@
 <template>
   <div class="container-fluid mt-4">
-    <h1 class="PageHead bg-dark">{{`${entity} Mangement`}}</h1>
+    <h1 class="PageHead bg-dark">
+      {{ ` Mangement : ${entity} :: ${account.id}-${account.uname}` }}
+    </h1>
     <b-alert :show="loading" variant="info">Loading...</b-alert>
     <b-row>
       <b-col>
@@ -39,7 +41,11 @@
         </table>
       </b-col>
       <b-col lg="3">
-        <b-card :title="customer.id ? `Edit ${entity} ID#` + customer.id : `New ${entity}`">
+        <b-card
+          :title="
+            customer.id ? `Edit ${entity} ID#` + customer.id : `New ${entity}`
+          "
+        >
           <form @submit.prevent="saveCustomer">
             <b-form-group label="Customer Name">
               <b-form-input type="text" v-model="customer.name"></b-form-input>
@@ -73,63 +79,88 @@
 </template>
 
 <script>
-import { customerAPI, contactAPI } from '@/api'
-import router from '../router'
-const NewCustomer = Object.assign({})
-
+import { customerAPI, contactAPI } from "@/api";
+import router from "../router";
+const cleanCustomer = {
+  name: "",
+  id: 0
+};
+const cleanAccount = {
+  uname: "",
+  fname: "",
+  lname: "",
+  mname: "",
+  id: 0
+};
 export default {
   data() {
     return {
-      entity:'Customer',
+      entity: "Customer",
       loading: false,
       customers: [],
-      customer: NewCustomer
-    }
+      customer: Object.assign({}, cleanCustomer),
+      account: Object.assign({}, cleanAccount)
+    };
   },
   async created() {
-    let localAccount = JSON.parse(localStorage.getItem('account'))
+    let localAccount = JSON.parse(localStorage.getItem("account"));
     if (!localAccount) {
-      router.push({ name: 'Login' })
+      router.push({ name: "Login" });
     }
-    this.refreshCustomers()
+    this.refreshCustomers();
   },
   methods: {
     async refreshCustomers() {
-      this.loading = true
-      this.contacts = await contactAPI.getContacts()
-      this.customers = await customerAPI.getCustomers()
-      this.customers.forEach(cust => {
-        let custCon = this.contacts.filter(
-          contact => contact.customerId == cust.id
-        )
-        cust.contacts = custCon.reduce(
-          (list, con) => list + "'" + con.fname + ' ' + con.lname + "'",
-          ''
-        )
-      })
-      this.loading = false
+      this.loading = true;
+      const localAccountId = localStorage.getItem("accountId");
+      if (localAccountId) {
+        this.account = cleanAccount;
+        this.account = JSON.parse(localStorage.getItem("account"));
+        this.state = "Local";
+        try {
+          this.account = await accountAPI.getAccount(localAccountId);
+          localStorage.setItem("account", JSON.stringify(this.account));
+          this.state = "Online";
+          this.customers = await customerAPI.getCustomersPerAccount();
+          // this.customers.forEach(cust => {
+          //   let custCon = this.contacts.filter(
+          //     contact => contact.customerId == cust.id
+          //   );
+          //   cust.contacts = custCon.reduce(
+          //     (list, con) => list + "'" + con.fname + " " + con.lname + "'",
+          //     ""
+          //   );
+          // });
+        } catch (e) {
+          console.log(`failed to get Account from online`, e);
+          this.state = "Offline";
+        }
+      } else {
+        this.account = cleanAccount;
+      }
+      this.loading = false;
     },
     async populateCustomerToEdit(customer) {
-      this.customer = Object.assign({}, customer)
+      this.customer = Object.assign({}, customer);
     },
     async saveCustomer() {
       if (this.customer.id) {
-        await customerAPI.updateCustomer(this.customer.id, this.customer)
+        await customerAPI.updateCustomer(this.customer.id, this.customer);
       } else {
-        await customerAPI.createCustomer(this.customer)
+        await customerAPI.createCustomer(this.customer);
       }
-      this.customer = NewCustomer
-      await this.refreshCustomers()
+      this.customer = cleanCustomer;
+      await this.refreshCustomers();
     },
     async deleteCustomer(id) {
-      if (confirm('Are you sure you want to delete it ???')) {
+      if (confirm("Are you sure you want to delete it ???")) {
         if (this.customer.id === id) {
-          this.customer = NewCustomer
+          this.customer = cleanCustomer;
         }
-        await customerAPI.deleteCustomer(id)
-        await this.refreshCustomers()
+        await customerAPI.deleteCustomer(id);
+        await this.refreshCustomers();
       }
     }
   }
-}
+};
 </script>

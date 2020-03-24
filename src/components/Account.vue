@@ -1,9 +1,11 @@
 <template>
   <div class="container-fluid mt-4">
-    <h1 class="PageHead bg-dark">{{`${entity} Mangement`}}</h1>
+    <h1 class="PageHead bg-dark">
+      {{ ` Mangement : ${entity} :: ${account.id}-${account.uname}` }}
+    </h1>
     <b-alert :show="loading" variant="info">Loading...</b-alert>
     <b-row>
-      <b-col sm="12">
+      <b-col sm="6">
         <b-card-title>Account Name</b-card-title>
         <b-input
           type="text"
@@ -16,6 +18,14 @@
           <h3>{{ account.uname }}</h3></b-card-text
         >
       </b-col>
+      <b-col sm="6">
+        <b-card-title>Account ID</b-card-title>
+        <b-card-text>
+          <h3>{{ account.id }}</h3>
+        </b-card-text>
+      </b-col>
+    </b-row>
+    <b-row>
       <b-col sm="12" md="6" lg="4">
         <b-card-title>Name</b-card-title>
         <b-input
@@ -41,19 +51,42 @@
       <b-col sm="12" md="6" lg="4">
         <b-card-title>Profile</b-card-title>
 
-        <b-input
+        <!-- <b-input
           type="email"
           v-model="account.email"
-          placeholder="Email"
-        ></b-input>
+          placeholder="New Email Email"
+        ></b-input> -->
+        <b-button v-if="account.id" type="button" @click="manageEmails"
+          >Manage Emails</b-button
+        >
         <b-card-text>Email</b-card-text>
+        <ol>
+          <li v-for="email in emails" :key="email.id">
+            {{ email.email }}
+          </li>
+        </ol>
 
-        <b-input
+        <!-- <b-input
           type="text"
           v-model="account.address"
-          placeholder="Mailing Address"
-        ></b-input>
+          placeholder="New Mailing Address"
+        ></b-input> -->
+        <b-button v-if="account.id" type="button" @click="manageAddresses"
+          >Manage Addresses</b-button
+        >
         <b-card-text>Address</b-card-text>
+        <ol>
+          <li v-for="addr in addresses" :key="addr.id">
+            <ul>
+              <div>{{ addr.street1 }}</div>
+              <div v-if="addr.street2">{{ addr.street2 }}</div>
+              <div v-if="addr.city">
+                {{ addr.city }}, {{ addr.state }} {{ addr.zip }}
+              </div>
+              <div v-if="addr.country">{{ addr.country }}</div>
+            </ul>
+          </li>
+        </ol>
       </b-col>
       <b-col sm="12" md="6" lg="4">
         <b-card-title>Password</b-card-title>
@@ -120,147 +153,140 @@
 </template>
 
 <script>
-import { accountAPI, passwordAPI, loginAPI } from '@/api'
-import { CheckLoggedIn } from '../auth'
-import router from '../router'
-let cleanAccount = {
-  uname: '',
-  fname: '',
-  lname: '',
-  mname: '',
-  address: 0,
-  email: 0,
+import { accountAPI, passwordAPI, loginAPI, addressAPI, emailAPI } from "@/api";
+import { CheckLoggedIn } from "../auth";
+import router from "../router";
+const cleanEmail = {
+  email: "",
+  endpointType: 0,
+  refType: "",
+  refID: 0
+};
+const cleanAddress = {
+  street1: "",
+  street2: "",
+  city: "",
+  country: "",
+  zip: 0,
+  endpointType: 0,
+  refType: "",
+  refID: 0
+};
+const cleanAccount = {
+  uname: "",
+  fname: "",
+  lname: "",
+  mname: "",
+  // addresses: [],
+  // emails: [],
   id: 0
-}
-let cleanPassword = { password: '', confirm: '' }
+};
+let cleanPassword = { password: "", confirm: "" };
 export default {
   data() {
     return {
-      entity:`Account`,
+      entity: `Account`,
       loading: false,
       account: Object.assign({}, cleanAccount),
       password: Object.assign({}, cleanPassword),
-      state: 'Create'
-    }
+      state: "Create",
+      addresses: [],
+      emails: []
+    };
   },
   async created() {
     this.isLoggedIn(
       () => {
-        this.refreshForm()
+        this.refreshForm();
       },
       () => {
         // router.push({ name: 'Login' })
       }
-    )
-    this.refreshForm()
+    );
+    this.refreshForm();
   },
   methods: {
     isLoggedIn(suc, fail) {
-      CheckLoggedIn(suc, fail)
+      CheckLoggedIn(suc, fail);
+    },
+    manageAddresses() {
+      router.push({ name: "Address" });
+    },
+    manageEmails() {
+      router.push({ name: "Email" });
     },
     async refreshForm() {
-      this.loading = true
-      const localAccountId = localStorage.getItem('accountId')
+      this.loading = true;
+      const localAccountId = localStorage.getItem("accountId");
       if (localAccountId) {
-        this.account = cleanAccount
-        this.account = JSON.parse(localStorage.getItem('account'))
-        this.state = 'Local'
+        this.account = cleanAccount;
+        this.account = JSON.parse(localStorage.getItem("account"));
+        this.state = "Local";
         try {
-          this.account = await accountAPI.getAccount(localAccountId)
-          localStorage.setItem('account', JSON.stringify(this.account))
-          this.state = 'Online'
+          this.account = await accountAPI.getAccount(localAccountId);
+          localStorage.setItem("account", JSON.stringify(this.account));
+          this.state = "Online";
+          //getaddresses
+          this.addresses = await addressAPI.getAddresses();
+          this.emails = await emailAPI.getEmails();
         } catch (e) {
-          console.log(`failed to get Account from online`, e)
-          this.state = 'Offline'
+          console.log(`failed to get Account from online`, e);
+          this.state = "Offline";
         }
       } else {
-        this.account = cleanAccount
+        this.account = cleanAccount;
       }
-      this.loading = false
+      this.loading = false;
     },
-    clearForm() {
-      this.loading = true
-      this.account = Object.assign({}, cleanAccount)
-      this.loading = false
+    async clearForm() {
+      this.loading = true;
+      this.account = Object.assign({}, cleanAccount);
+      this.loading = false;
     },
     async createAccount() {
       if (this.password.password == this.password.confirm) {
-        let md5p = loginAPI.hashPassword(this.password.password)
-        this.account = await accountAPI.createAccount(this.account)
-        localStorage.setItem('account', JSON.stringify(this.account))
-        localStorage.setItem('accountid', this.account.id)
+        let md5p = loginAPI.hashPassword(this.password.password);
+        this.account = await accountAPI.createAccount(this.account);
+        localStorage.setItem("account", JSON.stringify(this.account));
+        localStorage.setItem("accountid", this.account.id);
         this.password = await passwordAPI.createPassword({
           unameid: this.account.id,
           password: md5p
-        })
+        });
       }
       // window.location.reload()
-      alert('Account Created Please login')
-      router.push({ name: 'Login' })
+      alert("Account Created Please login");
+      router.push({ name: "Login" });
     },
     async updateAccount() {
       try {
         this.account = await accountAPI.updateAccount(
           this.account.id,
           this.account
-        )
-        console.log(`updated the account`)
-        this.refreshForm()
+        );
+        console.log(`updated the account`);
+        this.refreshForm();
       } catch (e) {
-        consol.error(e)
+        consol.error(e);
       }
     },
     matchPasswords() {},
     async upcertPassword() {
       //get password from account id
-      let pass
+      let pass;
       try {
-        pass = passwordAPI.getPasswordByAccountId(this.account.id)
+        pass = passwordAPI.getPerAccount(this.account.id);
       } catch (e) {
-        console.error(e)
+        console.error(e);
       }
-      this.password.password = LoginAPI.hashPassword(this.password.password)
+      this.password.password = LoginAPI.hashPassword(this.password.password);
       if (pass) {
-        pass = passwordAPI.updatePassword(this.account.id, this.password)
+        pass = passwordAPI.updatePassword(this.account.id, this.password);
       } else {
-        pass = passwordAPI.createPassword(this.password)
+        pass = passwordAPI.createPassword(this.password);
       }
-      this.password = pass
+      this.password = pass;
     }
-    // updateTime() {
-    //   this.time = moment(this.model.start).fromNow("mm");
-    // },
-    // updateBody() {
-    //   this.model.body = this.model.body;
-    // async startChunk(evt) {
-    //   this.refreshForm();
-    //   evt.preventDefault();
-    //   this.model.start = new Date();
-    //   this.model.open = true;
-    //   this.model = await chunkAPI.createChunk(this.model);
-    //   this.showStart = this.model.start ? false : true;
-    //   this.interval = setInterval(() => {
-    //     this.updateTime();
-    //     console.log("StartedTime");
-    //   }, 1000);
-    // },
-    // async nextChunk(evt) {
-    //   if (this.model.open) {
-    //     await this.stopChunk(evt);
-    //   }
-    //   this.refreshForm();
-    //   await this.startChunk(evt);
-    // },
-
-    // async stopChunk(evt) {
-    //   evt.preventDefault();
-    //   clearInterval(this.interval);
-    //   this.model.stop = new Date();
-    //   this.model.open = false;
-    //   this.model = await chunkAPI.updateChunk(this.model.id, this.model);
-
-    // this.model = timer;
-    // }
   }
-}
+};
 </script>

@@ -1,6 +1,8 @@
 <template>
   <div class="container-fluid mt-4">
-    <h1 class="PageHead bg-dark">{{`${entity} Mangement`}}</h1>
+    <h1 class="PageHead bg-dark">
+      {{ ` Mangement : ${entity} :: ${account.id}-${account.uname}` }}
+    </h1>
     <b-alert :show="loading" variant="info">Loading...</b-alert>
     <b-row>
       <b-col>
@@ -35,7 +37,9 @@
         </table>
       </b-col>
       <b-col lg="3">
-        <b-card :title="chunk.id ? `Edit ${entity} ID#` + model.id : `New ${entity}`">
+        <b-card
+          :title="chunk.id ? `Edit ${entity} ID#` + model.id : `New ${entity}`"
+        >
           <form @submit.prevent="saveChunk">
             <b-form-group label="Customer">
               <b-form-select
@@ -60,79 +64,102 @@
 </template>
 
 <script>
-import { chunkAPI, customerAPI } from '@/api'
-import router from '../router'
+import { chunkAPI, customerAPI } from "@/api";
+import router from "../router";
 
 const NewChunk = {
   start: new Date(),
   open: true
-}
-
+};
+const cleanAccount = {
+  uname: "",
+  fname: "",
+  lname: "",
+  mname: "",
+  id: 0
+};
 export default {
   data() {
     return {
-      entity:`Chunk`,
+      entity: `Chunk`,
       loading: false,
       chunks: [],
       customers: [],
       chunk: NewChunk,
       account: {}
-    }
+    };
   },
   async created() {
-    this.refreshChunks()
+    this.refreshForm();
   },
   methods: {
-    async refreshChunks() {
-      let localAccount = JSON.parse(localStorage.getItem('account'))
-      if (!localAccount) {
-        router.push({ name: 'Login' })
-      } else {
-        this.account = localAccount
-      }
-      this.loading = true
-      let custs = await customerAPI.getCustomers()
-      this.customers = custs.map(cust => {
-        return { value: cust.id, text: cust.name }
-      })
-      // let chks = await chunkAPI.getChunks()
-      let chks = await chunkAPI.getChunksByAccount(this.account.id)
-      this.chunks = chks.map(chunk => {
-        let c = custs.filter(cust => cust.id === chunk.customer)
-        if (c.length != 0) {
-          chunk.customer = c[0].name
+    async refreshForm() {
+      this.loading = true;
+      let localAccountId = JSON.parse(localStorage.getItem("accountId"));
+      if (localAccountId) {
+        this.account = cleanAccount;
+        this.account = JSON.parse(localStorage.getItem("account"));
+        this.state = "Local";
+        try {
+          this.account = await accountAPI.getAccount(localAccountId);
+          localStorage.setItem("account", JSON.stringify(this.account));
+          this.state = "Online";
+          this.chunks = await chunkAPI.getMattersPerAccount(this.account.id);
+          this.chunk = Object.assign({}, NewChunk, {
+            refID: this.account.id
+          });
+        } catch (e) {
+          console.log(`failed to get Account from online`, e);
+          this.state = "Offline";
         }
-        return chunk
-      })
-      this.loading = false
+      } else {
+        router.push({ name: "Login" });
+      }
+      this.loading = true;
+      let custs = await customerAPI.getCustomers();
+      this.customers = custs.map(cust => {
+        return { value: cust.id, text: cust.name };
+      });
+      // let chks = await chunkAPI.getChunks()
+      this.chunks = await chunkAPI.getChunksPerAccount(this.account.id);
+      // this.chunks = chks.map(chunk => {
+      //   let c = custs.filter(cust => cust.id === chunk.customer)
+      //   if (c.length != 0) {
+      //     chunk.customer = c[0].name
+      //   }
+      //   return chunk
+      // })
+      this.loading = false;
     },
     async populateChunkToEdit(chunk) {
-      let selected = this.customers.filter(cust => cust.text === chunk.customer)
-      this.chunk = Object.assign({}, chunk)
+      let selected = this.customers.filter(
+        cust => cust.text === chunk.customer
+      );
+      this.chunk = Object.assign({}, chunk);
       if (selected.length != 0) {
-        this.chunk = Object.assign(this.chunk, { customer: selected[0].value })
+        this.chunk = Object.assign(this.chunk, { customer: selected[0].value });
       }
     },
     async saveChunk() {
-      this.chunk.open = false
-      this.chunk.stop = new Date()
+      this.chunk.open = false;
+      this.chunk.stop = new Date();
       if (this.chunk.id) {
-        await chunkAPI.updateChunk(this.chunk.id, this.chunk)
+        await chunkAPI.updateChunk(this.chunk.id, this.chunk);
       } else {
-        await chunkAPI.createChunk(this.chunk)
+        await chunkAPI.createChunk(this.chunk);
       }
-      this.chunk = NewChunk
-      await this.refreshChunks()
+      this.chunk = NewChunk;
+      await this.refreshChunks();
     },
     async deleteChunk(id) {
-      if (confirm('Are you sure you want to delete it ???')) {
+      if (confirm("Are you sure you want to delete it ???")) {
         if (this.chunk.id === id) {
-          this.chunk = NewChunk
+          this.chunk = NewChunk;
         }
-        await chunkAPI.deleteChunk(id)
-        await this.refreshChunks()
+        await chunkAPI.deleteChunk(id);
+        await this.refreshChunks();
       }
     }
   }
-}
+};
 </script>

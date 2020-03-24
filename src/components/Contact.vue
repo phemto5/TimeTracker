@@ -1,6 +1,6 @@
 <template>
   <div class="container-fluid mt-4">
-    <h1 class="PageHead bg-dark">{{`${entity} Mangement`}}</h1>
+    <h1 class="PageHead bg-dark">{{ `${entity} Mangement` }}</h1>
     <b-alert :show="loading" variant="info">Loading...</b-alert>
     <b-row>
       <b-col>
@@ -43,7 +43,11 @@
         </table>
       </b-col>
       <b-col lg="3">
-        <b-card :title="contact.id ? `Edit ${entity} ID#` + contact.id : `New ${entity}`">
+        <b-card
+          :title="
+            contact.id ? `Edit ${entity} ID#` + contact.id : `New ${entity}`
+          "
+        >
           <form @submit.prevent="saveContact">
             <b-form-group label="Contact Name">
               <b-form-input
@@ -62,13 +66,13 @@
                 v-model="contact.lname"
               ></b-form-input>
             </b-form-group>
-            <b-form-group label="Customer Name">
+            <!-- <b-form-group label="Customer Name">
               <b-form-select
                 :options="customers"
                 type="text"
                 placeholder="Customer"
                 v-model="contact.customerId"
-              ></b-form-select>
+              ></b-form-select> -->
             </b-form-group>
             <b-form-group label="Addresses">
               <!-- <b-form-textarea rows="4" v-model="model.addresses"></b-form-textarea> -->
@@ -94,6 +98,7 @@
 
 <script>
 import { contactAPI, customerAPI } from "@/api";
+import { Context } from "@/context";
 import router from "../router";
 const NewContact = Object.assign({});
 
@@ -102,9 +107,10 @@ export default {
     return {
       entity: `Contact`,
       loading: false,
-      contacts: [],
-      customers: [],
-      contact: NewContact
+      context:{},
+      // contacts: [],
+      // customers: [],
+      // contact: NewContact
     };
   },
   async created() {
@@ -117,46 +123,48 @@ export default {
   methods: {
     async refreshContacts() {
       this.loading = true;
-      let custs = await customerAPI.getCustomers();
-      this.customers = custs.map(cust => {
-        return { value: cust.id, text: cust.name };
-      });
-      let conts = await contactAPI.getContacts();
-      this.contacts = conts.map(cont => {
-        if (custs.length != 0) {
-          let c = custs.filter(cust => cust.id === cont.customerId);
-          if (c.length != 0) {
-            cont.customerId = c[0].name;
-          }
-        }
-        return cont;
-      });
+      this.context = await Context.load()
+
+      // let custs = await customerAPI.getCustomers();
+      // this.customers = custs.map(cust => {
+      //   return { value: cust.id, text: cust.name };
+      // });
+      // let conts = await contactAPI.getContacts();
+      // this.contacts = conts.map(cont => {
+      //   if (custs.length != 0) {
+      //     let c = custs.filter(cust => cust.id === cont.customerId);
+      //     if (c.length != 0) {
+      //       cont.customerId = c[0].name;
+      //     }
+      //   }
+      //   return cont;
+      // });
       this.loading = false;
     },
     async populateContactToEdit(contact) {
-      let selected = this.customers.filter(
+      let selected = this.context.entities.filter(
         cust => cust.text === contact.customerId
       );
-      this.contact = Object.assign({}, contact);
+      this.context.entity = Object.assign({}, contact);
       if (selected.length != 0) {
-        this.contact = Object.assign(this.contact, {
+        this.context.entity = Object.assign(this.context.entity, {
           customerId: selected[0].value
         });
       }
     },
     async saveContact() {
       if (this.contact.id) {
-        await contactAPI.updateContact(this.contact.id, this.contact);
+        await contactAPI.updateContact(this.context.entity.id, this.context.entity);
       } else {
-        await contactAPI.createContact(this.contact);
+        await contactAPI.createContact(this.context.entity);
       }
       this.contact = NewContact;
       await this.refreshContacts();
     },
     async deleteContact(id) {
       if (confirm("Are you sure you want to delete it ???")) {
-        if (this.contact.id === id) {
-          this.contact = NewContact;
+        if (this.context.entity.id === id) {
+          this.context.entity = NewContact;
         }
         await contactAPI.deleteContact(id);
         await this.refreshContacts();
