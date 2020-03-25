@@ -44,10 +44,10 @@
         >
           <form @submit.prevent="saveChunk">
             <b-form-group label="Customer">
-              <b-form-select
+              <!-- <b-form-select
                 v-model="chunk.customer"
                 :options="customers"
-              ></b-form-select>
+              ></b-form-select> -->
             </b-form-group>
             <b-form-group label="Description">
               <b-form-textarea rows="4" v-model="chunk.body"></b-form-textarea>
@@ -78,13 +78,13 @@ export default {
       entity: `Chunk`,
       loading: false,
       chunks: [],
-      customers: [],
+      // customers: [],
       chunk: new Chunk(),
       context: new Context()
     };
   },
   async created() {
-    this.refreshForm();
+    await this.refreshForm();
   },
   methods: {
     isLoggedIn() {
@@ -99,34 +99,27 @@ export default {
       this.loading = true;
       this.isLoggedIn();
       try {
-        await this.context.load();
+        this.context = await this.context.load();
         this.chunks = await chunkAPI.getPerAccount(this.context.account.id);
         this.chunk.setRefID(this.context.account.id);
-        this.customers = await customerAPI.getPerAccount(
-          this.context.account.id
-        );
+        // this.customers = await customerAPI.getPerAccount(
+        //   this.context.account.id
+        // );
       } catch (e) {
         console.log(`failed to get Chunks from online`, e);
       }
-
       this.loading = false;
     },
     async populateChunkToEdit(chunk) {
-      let selected = this.customers.filter(
-        cust => cust.text === chunk.customer
-      );
-      this.chunk = Object.assign({}, chunk);
-      if (selected.length != 0) {
-        this.chunk = Object.assign(this.chunk, { customer: selected[0].value });
-      }
+      this.chunk = chunk;
     },
     async saveChunk() {
       this.chunk.open = false;
       this.chunk.stop = new Date();
       if (this.chunk.id) {
-        await chunkAPI.updateChunk(this.chunk.id, this.chunk);
+        this.chunk = await chunkAPI.updateChunk(this.chunk.id, this.chunk);
       } else {
-        await chunkAPI.createChunk(this.chunk);
+        this.chunk = await chunkAPI.createChunk(this.chunk);
       }
       this.chunk = new Chunk();
       await this.refreshForm();

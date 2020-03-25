@@ -75,7 +75,7 @@ export const chunkAPI = {
     return this.execute('get', '/chunks')
   },
   getPerAccount(account) {
-    return this.execute('get', `/chunks?refID=${account}`)
+    return this.execute('get', `/chunks/?refID=${account}`)
   },
   getChunk(id) {
     return this.execute('get', `/chunks/${id}`)

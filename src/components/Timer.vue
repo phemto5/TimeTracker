@@ -86,8 +86,12 @@ export default {
     async refreshForm() {
       this.loading = true;
       this.isLoggedIn();
-      await this.context.load(); // = Object.assign(this.context, ctx);
-      this.timer.setRefID(this.context.account.id); //Object.assign(cleanChunk);
+      try {
+        this.context = await this.context.load(); // = Object.assign(this.context, ctx);
+        this.timer.setRefID(this.context.account.id); //Object.assign(cleanChunk);
+      } catch (e) {
+        console.log("not able to load Timer");
+      }
       this.loading = false;
     },
     updateTime() {
@@ -97,16 +101,17 @@ export default {
       this.timer.body = this.timer.body;
     },
     async startChunk(evt) {
-      this.refreshForm();
+      // this.refreshForm();
       evt.preventDefault();
+      this.timer = new Chunk();
       this.timer.start = new Date();
       this.timer.open = true;
-      this.timer.owner = this.account.id;
+      this.timer.refID = this.context.account.id;
       this.timer = await chunkAPI.createChunk(this.timer);
       this.showStart = this.timer.start ? false : true;
       this.interval = setInterval(() => {
         this.updateTime();
-        console.log("StartedTime");
+        // console.log("StartedTime");
       }, 1000);
     },
     async nextChunk(evt) {

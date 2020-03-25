@@ -172,7 +172,7 @@ export default {
       CheckLoggedIn(
         () => {},
         () => {
-          router.push({ name: "Login" });
+          // router.push({ name: "Login" });
         }
       );
     },
@@ -186,7 +186,7 @@ export default {
       this.loading = true;
       this.isLoggedIn();
       try {
-        await this.context.load();
+        this.context = await this.context.load();
         this.account = this.context.account; // await accountAPI.getAccount(localAccountId);
         localStorage.setItem("account", JSON.stringify(this.account));
         this.addresses = await addressAPI.getPerAccount(
