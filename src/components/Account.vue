@@ -1,7 +1,9 @@
 <template>
   <div class="container-fluid mt-4">
     <h1 class="PageHead bg-dark">
-      {{ ` Mangement : ${entity} :: ${account.id}-${account.uname}` }}
+      {{
+        ` Mangement : ${entity} :: ${context.account.id}-${context.account.uname}`
+      }}
     </h1>
     <b-alert :show="loading" variant="info">Loading...</b-alert>
     <b-row>
@@ -51,11 +53,6 @@
       <b-col sm="12" md="6" lg="4">
         <b-card-title>Profile</b-card-title>
 
-        <!-- <b-input
-          type="email"
-          v-model="account.email"
-          placeholder="New Email Email"
-        ></b-input> -->
         <b-button v-if="account.id" type="button" @click="manageEmails"
           >Manage Emails</b-button
         >
@@ -66,11 +63,6 @@
           </li>
         </ol>
 
-        <!-- <b-input
-          type="text"
-          v-model="account.address"
-          placeholder="New Mailing Address"
-        ></b-input> -->
         <b-button v-if="account.id" type="button" @click="manageAddresses"
           >Manage Addresses</b-button
         >
@@ -156,58 +148,33 @@
 import { accountAPI, passwordAPI, loginAPI, addressAPI, emailAPI } from "@/api";
 import { CheckLoggedIn } from "../auth";
 import router from "../router";
-const cleanEmail = {
-  email: "",
-  endpointType: 0,
-  refType: "",
-  refID: 0
-};
-const cleanAddress = {
-  street1: "",
-  street2: "",
-  city: "",
-  country: "",
-  zip: 0,
-  endpointType: 0,
-  refType: "",
-  refID: 0
-};
-const cleanAccount = {
-  uname: "",
-  fname: "",
-  lname: "",
-  mname: "",
-  // addresses: [],
-  // emails: [],
-  id: 0
-};
-let cleanPassword = { password: "", confirm: "" };
+import Account from "../Account";
+import Password from "../Password";
+import Context from "../context";
 export default {
   data() {
     return {
       entity: `Account`,
       loading: false,
-      account: Object.assign({}, cleanAccount),
-      password: Object.assign({}, cleanPassword),
+      context: new Context(),
+      account: new Account(), // Object.assign({}, cleanAccount),
+      password: new Password(), // Object.assign({}, cleanPassword),
       state: "Create",
       addresses: [],
       emails: []
     };
   },
   async created() {
-    this.isLoggedIn(
-      () => {
-        this.refreshForm();
-      },
-      () => {
-        // router.push({ name: 'Login' })
-      }
-    );
     this.refreshForm();
   },
   methods: {
-    isLoggedIn(suc, fail) {
-      CheckLoggedIn(suc, fail);
+    isLoggedIn() {
+      CheckLoggedIn(
+        () => {},
+        () => {
+          router.push({ name: "Login" });
+        }
+      );
     },
     manageAddresses() {
       router.push({ name: "Address" });
@@ -217,30 +184,23 @@ export default {
     },
     async refreshForm() {
       this.loading = true;
-      const localAccountId = localStorage.getItem("accountId");
-      if (localAccountId) {
-        this.account = cleanAccount;
-        this.account = JSON.parse(localStorage.getItem("account"));
-        this.state = "Local";
-        try {
-          this.account = await accountAPI.getAccount(localAccountId);
-          localStorage.setItem("account", JSON.stringify(this.account));
-          this.state = "Online";
-          //getaddresses
-          this.addresses = await addressAPI.getAddresses();
-          this.emails = await emailAPI.getEmails();
-        } catch (e) {
-          console.log(`failed to get Account from online`, e);
-          this.state = "Offline";
-        }
-      } else {
-        this.account = cleanAccount;
+      this.isLoggedIn();
+      try {
+        await this.context.load();
+        this.account = this.context.account; // await accountAPI.getAccount(localAccountId);
+        localStorage.setItem("account", JSON.stringify(this.account));
+        this.addresses = await addressAPI.getPerAccount(
+          this.context.account.id
+        );
+        this.emails = await emailAPI.getPerAccount(this.context.account.id);
+      } catch (e) {
+        console.log(`failed to get Account from online`, e);
       }
       this.loading = false;
     },
     async clearForm() {
       this.loading = true;
-      this.account = Object.assign({}, cleanAccount);
+      this.account = new Account();
       this.loading = false;
     },
     async createAccount() {

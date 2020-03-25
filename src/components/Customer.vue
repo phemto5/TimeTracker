@@ -1,7 +1,9 @@
 <template>
   <div class="container-fluid mt-4">
     <h1 class="PageHead bg-dark">
-      {{ ` Mangement : ${entity} :: ${account.id}-${account.uname}` }}
+      {{
+        ` Mangement : ${entity} :: ${context.account.id}-${context.account.uname}`
+      }}
     </h1>
     <b-alert :show="loading" variant="info">Loading...</b-alert>
     <b-row>
@@ -81,62 +83,40 @@
 <script>
 import { customerAPI, contactAPI } from "@/api";
 import router from "../router";
-const cleanCustomer = {
-  name: "",
-  id: 0
-};
-const cleanAccount = {
-  uname: "",
-  fname: "",
-  lname: "",
-  mname: "",
-  id: 0
-};
+import Context from "../context";
+import Customer from "../Customer";
+import { CheckLoggedIn } from "../auth";
 export default {
   data() {
     return {
       entity: "Customer",
       loading: false,
       customers: [],
-      customer: Object.assign({}, cleanCustomer),
-      account: Object.assign({}, cleanAccount)
+      customer: new Customer(),
+      context: new Context()
+      // account: Object.assign({}, cleanAccount)
     };
   },
   async created() {
-    let localAccount = JSON.parse(localStorage.getItem("account"));
-    if (!localAccount) {
-      router.push({ name: "Login" });
-    }
     this.refreshCustomers();
   },
   methods: {
+    isLoggedIn() {
+      CheckLoggedIn(
+        () => {},
+        () => {
+          router.push({ name: "Login" });
+        }
+      );
+    },
     async refreshCustomers() {
       this.loading = true;
-      const localAccountId = localStorage.getItem("accountId");
-      if (localAccountId) {
-        this.account = cleanAccount;
-        this.account = JSON.parse(localStorage.getItem("account"));
-        this.state = "Local";
-        try {
-          this.account = await accountAPI.getAccount(localAccountId);
-          localStorage.setItem("account", JSON.stringify(this.account));
-          this.state = "Online";
-          this.customers = await customerAPI.getCustomersPerAccount();
-          // this.customers.forEach(cust => {
-          //   let custCon = this.contacts.filter(
-          //     contact => contact.customerId == cust.id
-          //   );
-          //   cust.contacts = custCon.reduce(
-          //     (list, con) => list + "'" + con.fname + " " + con.lname + "'",
-          //     ""
-          //   );
-          // });
-        } catch (e) {
-          console.log(`failed to get Account from online`, e);
-          this.state = "Offline";
-        }
-      } else {
-        this.account = cleanAccount;
+      this.isLoggedIn();
+      try {
+        await this.context.load();
+        this.customers = await customerAPI.getPerAccount();
+      } catch (e) {
+        console.log(`failed to get Customers from online`, e);
       }
       this.loading = false;
     },

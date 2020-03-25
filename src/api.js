@@ -75,7 +75,7 @@ export const chunkAPI = {
     return this.execute('get', '/chunks')
   },
   getPerAccount(account) {
-    return this.execute('get', `/chunks?owner=${account}`)
+    return this.execute('get', `/chunks?refID=${account}`)
   },
   getChunk(id) {
     return this.execute('get', `/chunks/${id}`)
@@ -97,7 +97,7 @@ export const customerAPI = {
     return this.execute('get', '/customers')
   },
   getPerAccount(accountid) {
-    return this.execute('get', `/customers/?accountid=${accountid}`)
+    return this.execute('get', `/customers/?refID=${accountid}`)
   },
   getCustomer(id) {
     return this.execute('get', `/customers/${id}`)
@@ -197,3 +197,24 @@ export const matterAPI = {
   }
 }
 
+export const endtypeAPI = {
+  execute: exebase,
+  getEndTypes() {
+    return this.execute('get', '/endtypes')
+  },
+  getPerAccount(accountid) {
+    return this.execute('get', `/endtypes/?refID=${accountid}`)
+  },
+  getEndType(id) {
+    return this.execute('get', `/endtypes/${id}`)
+  },
+  createEndType(data) {
+    return this.execute('post', `/endtypes`, data)
+  },
+  updateEndType(id, data) {
+    return this.execute('put', `/endtypes/${id}`, data)
+  },
+  deleteEndType(id) {
+    return this.execute('delete', `/endtypes/${id}`)
+  }
+}

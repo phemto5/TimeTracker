@@ -1,8 +1,10 @@
 <template>
   <div class="container-fluid mt-4">
     <h1 class="PageHead bg-dark">
-      {{ ` Mangement : ${entity} :: ${account.id}-${account.uname}` }}
-      </h1>
+      {{
+        ` Mangement : ${entity} :: ${context.account.id}-${context.account.uname}`
+      }}
+    </h1>
     <b-alert :show="loading" variant="info">Loading...</b-alert>
     <b-row>
       <b-col>
@@ -52,9 +54,34 @@
 </style>
 
 <script>
+import Context from "../context";
+import { CheckLoggedIn } from "../auth";
 export default {
   data() {
-    return { entity: `Help` };
+    return { entity: `Help`, context: new Context(), loading: true };
+  },
+  async created() {
+    await this.refreshForm();
+  },
+  methods: {
+    isLoggedIn() {
+      CheckLoggedIn(
+        () => {},
+        () => {
+          router.push({ name: "Login" });
+        }
+      );
+    },
+    async refreshForm() {
+      this.loading = true;
+      this.isLoggedIn();
+      try {
+        this.context = await this.context.load();
+      } catch (e) {
+        console.log("Failed to load help");
+      }
+      this.loading = false;
+    }
   }
 };
 </script>

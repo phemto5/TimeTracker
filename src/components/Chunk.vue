@@ -1,7 +1,9 @@
 <template>
   <div class="container-fluid mt-4">
     <h1 class="PageHead bg-dark">
-      {{ ` Mangement : ${entity} :: ${account.id}-${account.uname}` }}
+      {{
+        ` Mangement : ${entity} :: ${context.account.id}-${context.account.uname}`
+      }}
     </h1>
     <b-alert :show="loading" variant="info">Loading...</b-alert>
     <b-row>
@@ -15,7 +17,7 @@
               <th>Customer</th>
               <th>Desctiption</th>
               <th>Tags</th>
-              <th>Owner</th>
+              <th>refID</th>
               <th>&nbsp;</th>
             </tr>
           </thead>
@@ -27,7 +29,7 @@
               <td>{{ chunk.customer }}</td>
               <td>{{ chunk.body }}</td>
               <td>{{ chunk.tag }}</td>
-              <td>{{ chunk.owner }}</td>
+              <td>{{ chunk.refID }}</td>
               <td class="text-right">
                 <a href="#" @click.prevent="populateChunkToEdit(chunk)">Edit</a>
                 <a href="#" @click.prevent="deleteChunk(chunk.id)">Delete</a>
@@ -66,18 +68,10 @@
 <script>
 import { chunkAPI, customerAPI } from "@/api";
 import router from "../router";
+import Chunk from "../Chunk";
+import Context from "../context";
+import { CheckLoggedIn } from "../auth";
 
-const NewChunk = {
-  start: new Date(),
-  open: true
-};
-const cleanAccount = {
-  uname: "",
-  fname: "",
-  lname: "",
-  mname: "",
-  id: 0
-};
 export default {
   data() {
     return {
@@ -85,50 +79,36 @@ export default {
       loading: false,
       chunks: [],
       customers: [],
-      chunk: NewChunk,
-      account: {}
+      chunk: new Chunk(),
+      context: new Context()
     };
   },
   async created() {
     this.refreshForm();
   },
   methods: {
+    isLoggedIn() {
+      CheckLoggedIn(
+        () => {},
+        () => {
+          router.push({ name: "Login" });
+        }
+      );
+    },
     async refreshForm() {
       this.loading = true;
-      let localAccountId = JSON.parse(localStorage.getItem("accountId"));
-      if (localAccountId) {
-        this.account = cleanAccount;
-        this.account = JSON.parse(localStorage.getItem("account"));
-        this.state = "Local";
-        try {
-          this.account = await accountAPI.getAccount(localAccountId);
-          localStorage.setItem("account", JSON.stringify(this.account));
-          this.state = "Online";
-          this.chunks = await chunkAPI.getMattersPerAccount(this.account.id);
-          this.chunk = Object.assign({}, NewChunk, {
-            refID: this.account.id
-          });
-        } catch (e) {
-          console.log(`failed to get Account from online`, e);
-          this.state = "Offline";
-        }
-      } else {
-        router.push({ name: "Login" });
+      this.isLoggedIn();
+      try {
+        await this.context.load();
+        this.chunks = await chunkAPI.getPerAccount(this.context.account.id);
+        this.chunk.setRefID(this.context.account.id);
+        this.customers = await customerAPI.getPerAccount(
+          this.context.account.id
+        );
+      } catch (e) {
+        console.log(`failed to get Chunks from online`, e);
       }
-      this.loading = true;
-      let custs = await customerAPI.getCustomers();
-      this.customers = custs.map(cust => {
-        return { value: cust.id, text: cust.name };
-      });
-      // let chks = await chunkAPI.getChunks()
-      this.chunks = await chunkAPI.getChunksPerAccount(this.account.id);
-      // this.chunks = chks.map(chunk => {
-      //   let c = custs.filter(cust => cust.id === chunk.customer)
-      //   if (c.length != 0) {
-      //     chunk.customer = c[0].name
-      //   }
-      //   return chunk
-      // })
+
       this.loading = false;
     },
     async populateChunkToEdit(chunk) {
@@ -148,8 +128,8 @@ export default {
       } else {
         await chunkAPI.createChunk(this.chunk);
       }
-      this.chunk = NewChunk;
-      await this.refreshChunks();
+      this.chunk = new Chunk();
+      await this.refreshForm();
     },
     async deleteChunk(id) {
       if (confirm("Are you sure you want to delete it ???")) {

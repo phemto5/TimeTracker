@@ -1,8 +1,10 @@
 <template>
   <div class="container-fluid mt-4">
     <h1 class="PageHead bg-dark">
-      {{ ` Mangement : ${entity} :: ${account.id}-${account.uname}` }}
-</h1>
+      {{
+        ` Mangement : ${entity} :: ${context.account.id}-${context.account.uname}`
+      }}
+    </h1>
     <b-alert :show="loading" variant="info">Loading...</b-alert>
     <b-row>
       <b-col>
@@ -10,35 +12,21 @@
           <thead>
             <tr>
               <th>ID</th>
-              <th>street1</th>
-              <th>street2</th>
-              <th>city</th>
-              <th>state</th>
-              <th>country</th>
-              <th>zip</th>
-              <th>endpointType</th>
-              <th>refType</th>
+              <th>Name</th>
               <th>refID</th>
               <th>&nbsp;</th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="address in addresses" :key="address.id">
-              <td>{{ address.id }}</td>
-              <td>{{ address.street1 }}</td>
-              <td>{{ address.street2 }}</td>
-              <td>{{ address.city }}</td>
-              <td>{{ address.state }}</td>
-              <td>{{ address.counrty }}</td>
-              <td>{{ address.zip }}</td>
-              <td>{{ address.endpointType }}</td>
-              <td>{{ address.refType }}</td>
-              <td>{{ address.refID }}</td>
+            <tr v-for="endtype in endtypes" :key="endtype.id">
+              <td>{{ endtype.id }}</td>
+              <td>{{ endtype.name }}</td>
+              <td>{{ endtype.refID }}</td>
               <td class="text-right">
-                <a href="#" @click.prevent="populateAddressToEdit(address)"
+                <a href="#" @click.prevent="populateEndTypeToEdit(endtype)"
                   >Edit</a
                 >
-                <a href="#" @click.prevent="deleteAddress(address.id)"
+                <a href="#" @click.prevent="deleteEndType(endtype.id)"
                   >Delete</a
                 >
               </td>
@@ -49,59 +37,20 @@
       <b-col lg="3">
         <b-card
           :title="
-            address.id ? `Edit ${entity} ID#` + address.id : `New ${entity}`
+            endtype.id ? `Edit ${entity} ID#` + endtype.id : `New ${entity}`
           "
         >
-          <form @submit.prevent="saveAddress">
-            <b-form-group label="Address">
-              <b-form-input
-                type="text"
-                placeholder="Street 1"
-                v-model="address.street1"
-              ></b-form-input>
-              <b-form-input
-                type="text"
-                placeholder="Street 2"
-                v-model="address.street2"
-              ></b-form-input>
-              <b-form-input
-                type="text"
-                placeholder="City"
-                v-model="address.city"
-              ></b-form-input>
-              <b-form-input
-                type="text"
-                placeholder="State"
-                v-model="address.state"
-              ></b-form-input>
-              <b-form-input
-                type="text"
-                placeholder="Country"
-                v-model="address.country"
-              ></b-form-input>
-              <b-form-input
-                type="text"
-                placeholder="Zip"
-                v-model="address.zip"
-              ></b-form-input>
-            </b-form-group>
-            <b-form-group label="Other">
-              <b-form-input
-                type="text"
-                placeholder="EndpointType"
-                v-model="address.endpointType"
-              ></b-form-input>
-              <b-form-input
-                type="text"
-                placeholder="RefType"
-                v-model="address.refType"
-              ></b-form-input>
-              <b-form-input
-                type="text"
-                placeholder="RefID"
-                v-model="address.refID"
-              ></b-form-input>
-            </b-form-group>
+          <form @submit.prevent="saveEndType">
+            <b-form-input
+              type="text"
+              placeholder="Name"
+              v-model="endtype.name"
+            ></b-form-input>
+            <b-form-input
+              type="text"
+              placeholder="refID"
+              v-model="endtype.refID"
+            ></b-form-input>
             <div>
               <b-button type="submit" variant="success">Save</b-button>
             </div>
@@ -116,38 +65,23 @@
 import { accountAPI, passwordAPI, loginAPI, addressAPI } from "@/api";
 import { CheckLoggedIn } from "../auth";
 import router from "../router";
-const cleanAddress = {
-  street1: "",
-  street2: "",
-  city: "",
-  country: "",
-  state: "",
-  zip: "",
-  endpointType: 0,
-  refType: "",
-  refID: 0
-};
-const cleanAccount = {
-  uname: "",
-  fname: "",
-  lname: "",
-  mname: "",
-  id: 0
-};
+import Context from "../context";
+import EndType from "../EndType";
+import { endtypeAPI } from "../api";
 export default {
   data() {
     return {
-      entity: `Address`,
+      entity: `EndType`,
       loading: false,
-      account: Object.assign({}, cleanAccount),
-      address: Object.assign({}, cleanAddress),
-      addresses: []
+      context: new Context(),
+      endtype: new EndType(),
+      endtypes: []
     };
   },
   async created() {
     this.isLoggedIn(
       () => {
-        this.refreshForm();
+        // this.refreshForm();
       },
       () => {
         router.push({ name: "Login" });
@@ -161,50 +95,39 @@ export default {
     },
     async refreshForm() {
       this.loading = true;
-      const localAccountId = localStorage.getItem("accountId");
-      if (localAccountId) {
-        this.account = cleanAccount;
-        this.account = JSON.parse(localStorage.getItem("account"));
-        this.state = "Local";
-        try {
-          this.account = await accountAPI.getAccount(localAccountId);
-          localStorage.setItem("account", JSON.stringify(this.account));
-          this.state = "Online";
-          this.addresses = await addressAPI.getAddressesPerAccount(this.account.id);
-          this.address = Object.assign({},cleanAddress,{refID:this.account.id});
-        } catch (e) {
-          console.log(`failed to get Account from online`, e);
-          this.state = "Offline";
-        }
-      } else {
-        this.account = cleanAccount;
+      try {
+        this.context.load();
+        this.endtypes = await endtypeAPI.getPerAccount(this.context.account.id);
+        this.endtype.setRefID(this.context.account.id);
+      } catch (e) {
+        console.log(`failed to get EndType from online`, e);
       }
       this.loading = false;
     },
     clearForm() {
       this.loading = true;
-      this.account = Object.assign({}, cleanAccount);
-      this.address = Object.assign({}, cleanAddress);
+      this.endtype = new EndType();
       this.loading = false;
     },
-    async populateAddressToEdit(address) {
-      this.address = Object.assign({}, cleanAddress,address,{refID:this.account.id});
+    async populateEndTypeToEdit(endtype) {
+      this.endtype = endtype;
+      this.endtype.setRefID(this.context.account.id);
     },
-    async saveAddress() {
-      if (this.address.id) {
-        await addressAPI.updateAddress(this.address.id, this.address);
+    async saveEndType() {
+      if (this.endtype.id) {
+        await endtypeAPI.updateAddress(this.endtype.id, this.endtype);
       } else {
-        await addressAPI.createAddress(this.address);
+        await endtypeAPI.createAddress(this.endtype);
       }
-      this.address = cleanAddress;
-      await this.refreshForm()
+      this.endtype = new EdnType(); //cleanAddress;
+      await this.refreshForm();
     },
-    async deleteAddress(id) {
+    async deleteEndType(id) {
       if (confirm("Are you sure you want to delete it ???")) {
-        if (this.address.id === id) {
-          this.address = cleanAddress;
+        if (this.endtype.id === id) {
+          this.endtype = new EndType();
         }
-        await contactAPI.deleteContact(id);
+        await endtypeAPI.deleteEndType(id);
         await this.refreshForm();
       }
     }

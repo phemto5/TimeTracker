@@ -1,7 +1,9 @@
 <template>
   <div class="container-fluid mt-4">
     <h1 class="PageHead bg-dark">
-      {{ ` Mangement : ${entity} :: ${account.id}-${account.uname}` }}
+      {{
+        ` Mangement : ${entity} :: ${context.account.id}-${context.account.uname}`
+      }}
     </h1>
     <b-alert :show="loading" variant="info">Loading...</b-alert>
     <b-row>
@@ -24,9 +26,7 @@
                 <a href="#" @click.prevent="populateMatterToEdit(matter)"
                   >Edit</a
                 >
-                <a href="#" @click.prevent="deleteMatter(matter.id)"
-                  >Delete</a
-                >
+                <a href="#" @click.prevent="deleteMatter(matter.id)">Delete</a>
               </td>
             </tr>
           </tbody>
@@ -68,27 +68,17 @@
 <script>
 import { accountAPI, passwordAPI, loginAPI, matterAPI } from "@/api";
 import { CheckLoggedIn } from "../auth";
+import Context from "../context";
+import Matter from "../Matter";
 import router from "../router";
-const cleanMatter = {
-  name: "",
-  refID: 0
-};
-const cleanAccount = {
-  uname: "",
-  fname: "",
-  lname: "",
-  mname: "",
-  id: 0
-};
 export default {
   data() {
     return {
       entity: `Matter`,
       loading: false,
-      account: Object.assign({}, cleanAccount),
-      matter: Object.assign({}, cleanMatter),
+      matter: new Matter(), //Object.assign({}, cleanMatter),
       matters: [],
-      state:''
+      context: new Context()
     };
   },
   async created() {
@@ -108,29 +98,18 @@ export default {
     },
     async refreshForm() {
       this.loading = true;
-      const localAccountId = localStorage.getItem("accountId");
-      if (localAccountId) {
-        this.account = cleanAccount;
-        this.account = JSON.parse(localStorage.getItem("account"));
-        this.state = "Local";
-        try {
-          this.account = await accountAPI.getAccount(localAccountId);
-          localStorage.setItem("account", JSON.stringify(this.account));
-          this.state = "Online";
-          this.matters = await matterAPI.getMattersPerAccount(this.account.id);
-          this.matter = Object.assign({},cleanMatter,{refID:this.account.id})
-        } catch (e) {
-          console.log(`failed to get Account from online`, e);
-          this.state = "Offline";
-        }
-      } else {
-        this.account = cleanAccount;
+      this.context.load();
+      try {
+        this.matters = await matterAPI.getPerAccount(this.context.account.id);
+        await this.matter.setRefID(this.context.account.id);
+      } catch (e) {
+        console.log(`failed to get Matters from online`, e);
       }
       this.loading = false;
     },
     clearForm() {
       this.loading = true;
-      this.matter = Object.assign({}, cleanMatter);
+      this.matter = new Matter(); //Object.assign({}, cleanMatter);
       this.loading = false;
     },
     async populateMatterToEdit(matter) {
