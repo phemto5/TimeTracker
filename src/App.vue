@@ -7,9 +7,11 @@
         <b-navbar-nav>
           <b-nav-item v-if="loggedin" to="/account">Account</b-nav-item>
           <b-nav-item v-if="loggedin" to="/timer">Timer</b-nav-item>
-          <b-nav-item v-if="loggedin" to="/chunks">Chunks</b-nav-item>
-          <b-nav-item v-if="loggedin" to="/customers">Customers</b-nav-item>
-          <b-nav-item v-if="loggedin" to="/contacts">Contacts</b-nav-item>
+          <b-nav-item v-if="loggedin" to="/chunk">Chunks</b-nav-item>
+          <b-nav-item v-if="loggedin" to="/customer">Customers</b-nav-item>
+          <b-nav-item v-if="loggedin" to="/contact">Contacts</b-nav-item>
+          <b-nav-item v-if="loggedin" to="/matter">Matters</b-nav-item>
+          <b-nav-item v-if="loggedin" to="/endtype">End Types</b-nav-item>
           <b-nav-item v-else to="/">Login</b-nav-item>
           <b-nav-item to="/help">Help</b-nav-item>
         </b-navbar-nav>
@@ -19,6 +21,8 @@
   </div>
 </template>
 <script>
+
+
 export default {
   data() {
     return { name: 'TimeTracker', loggedin: false }

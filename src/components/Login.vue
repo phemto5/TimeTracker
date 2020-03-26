@@ -1,6 +1,11 @@
 <template>
   <div class="container-fluid mt-4">
-    <h1 class="h1">Login</h1>
+    <h1 class="PageHead bg-dark" >
+      {{
+        ` Mangement : ${entity} `
+      }}
+      <span v-if="context.account">{{`${context.account.id}-${context.account.uname}`}}</span>
+    </h1>
     <b-alert :show="loading" variant="info">Loading...</b-alert>
     <b-row>
       <b-col sm="12" md="8">
@@ -40,84 +45,86 @@
 </template>
 
 <script>
-import { accountAPI, loginAPI } from '@/api'
-import router from '../router'
-import { CheckLoggedIn } from '../auth'
-let account = {
-  uname: '',
-  fname: '',
-  lname: '',
-  mname: '',
-  address: '',
-  email: '',
-  id: 0
-}
-let password = {
-  unameid: 0,
-  password: ''
-}
+import { accountAPI, loginAPI } from "@/api";
+import router from "../router";
+import { CheckLoggedIn } from "../auth";
+import Context from "../context";
+import Password from "../Password";
+import Account from '../Account'
+// let password = {
+//   unameid: 0,
+//   password: ""
+// };
 export default {
   data() {
+    let ctx = new Context();
+    let pw = new Password();
     return {
+      entity: `Login`,
       loading: false,
-      account: Object.assign({}, account),
-      password: Object.assign({}, password),
+      context: ctx,//{account:{id:0}},
+      password: pw, // Object.assign({}, password),
+      account: new Account(),
       warn: false
-    }
+    };
   },
   async created() {
     this.isLoggedIn(
       () => {
-        router.push({ name: 'Timer' })
+        router.push({ name: "Timer" });
       },
       () => {
-        this.clearForm()
-        this.warn = true
+        this.clearForm();
+        this.warn = true;
       }
-    )
-    this.refreshForm()
+    );
+    this.refreshForm();
   },
   methods: {
     isLoggedIn(suc, fail) {
-      CheckLoggedIn(suc, fail)
+      CheckLoggedIn(suc, fail);
     },
 
     refreshForm(failed = false) {
-      this.loading = true
+      this.loading = true;
       if (!failed) {
-        this.clearForm()
+        this.clearForm();
       } else {
-        console.log('Password or Username not correct')
+        console.log("Password or Username not correct");
       }
-      this.loading = false
+      this.loading = false;
     },
     clearForm() {},
     createAccount() {
-      router.push({ name: 'Account' })
+      router.push({ name: "Account" });
     },
     async login() {
-      console.log('Logging in')
-      let token = { msg: '', accountId: null, token: null, expires: null }
-      token = await loginAPI.login(this.account.uname, this.password.password)
+      console.log("Logging in");
+      let token = { msg: "", accountId: null, token: null, expires: null };
+      token = await loginAPI.login(
+        this.account.uname,
+        this.password.password
+      );
       if (token.accountId && token.accountId > 0) {
-        localStorage.setItem('loggedin', true)
-        localStorage.setItem('token', token.token)
-        localStorage.setItem('expires', token.expires)
-        localStorage.setItem('accountId', token.accountId)
+        console.info('Setting all storageitems');
+        localStorage.setItem("loggedin", true);
+        localStorage.setItem("token", token.token);
+        localStorage.setItem("expires", token.expires);
+        localStorage.setItem("accountId", token.accountId);
         try {
-          this.account = await accountAPI.getAccount(token.accountId)
-          localStorage.setItem('account', JSON.stringify(this.account))
+          this.context.account = await accountAPI.getAccount(token.accountId);
+          localStorage.setItem("account", JSON.stringify(this.context.account));
         } catch (e) {
-          console.log(`Could not load Account`)
+          console.log(`Could not load Login`);
         }
-        window.location.reload()
-        console.log(`Reloading Window`)
+        window.location.reload();
+        console.log(`Reloading Window`);
       } else {
-        this.refreshForm()
-        localStorage.clear()
-        console.log(`Failed to Login `, token)
+        this.refreshForm();
+        localStorage.clear();
+        console.log(`Failed to Login `, token);
       }
     }
   }
-}
+};
 </script>

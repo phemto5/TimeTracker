@@ -1,6 +1,11 @@
 <template>
   <div class="container-fluid mt-4">
-    <h1 class="h1">Contact Manger</h1>
+    <h1 class="PageHead bg-dark">
+      {{ ` Mangement : ${entity} ` }}
+      <span v-if="context.account">{{
+        `${context.account.id}-${context.account.uname}`
+      }}</span>
+    </h1>
     <b-alert :show="loading" variant="info">Loading...</b-alert>
     <b-row>
       <b-col>
@@ -43,33 +48,37 @@
         </table>
       </b-col>
       <b-col lg="3">
-        <b-card :title="model.id ? 'Edit Post ID#' + model.id : 'New Post'">
+        <b-card
+          :title="
+            contact.id ? `Edit ${entity} ID#` + contact.id : `New ${entity}`
+          "
+        >
           <form @submit.prevent="saveContact">
             <b-form-group label="Contact Name">
+              <b-form-text>{{ contact.id }}</b-form-text>
               <b-form-input
                 type="text"
                 placeholder="First Name"
-                v-model="model.fname"
+                v-model="contact.fname"
               ></b-form-input>
               <b-form-input
                 type="text"
                 placeholder="Middle Name"
-                v-model="model.mname"
+                v-model="contact.mname"
               ></b-form-input>
               <b-form-input
                 type="text"
                 placeholder="Last Name"
-                v-model="model.lname"
+                v-model="contact.lname"
               ></b-form-input>
             </b-form-group>
-            <b-form-group label="Customer Name">
+            <!-- <b-form-group label="Customer Name">
               <b-form-select
                 :options="customers"
                 type="text"
                 placeholder="Customer"
-                v-model="model.customerId"
-              ></b-form-select>
-            </b-form-group>
+                v-model="contact.customerId"
+              ></b-form-select> -->
             <b-form-group label="Addresses">
               <!-- <b-form-textarea rows="4" v-model="model.addresses"></b-form-textarea> -->
             </b-form-group>
@@ -93,69 +102,80 @@
 </template>
 
 <script>
-import { contactAPI, customerAPI } from '@/api'
-import router from '../router'
-const NewContact = Object.assign({})
+import { contactAPI, customerAPI } from "@/api";
+import Context from "@/context";
+import Contact from "../Contact";
+import router from "../router";
+import { CheckLoggedIn } from "../auth";
 
 export default {
   data() {
-    return { loading: false, contacts: [], customers: [], model: NewContact }
+    return {
+      entity: `Contact`,
+      loading: false,
+      context: new Context(),
+      contact: new Contact(),
+      contacts: []
+    };
   },
   async created() {
-    let localAccount = JSON.parse(localStorage.getItem('account'))
-    if (!localAccount) {
-      router.push({ name: 'Login' })
-    }
-    this.refreshContacts()
+    this.refreshContacts();
   },
   methods: {
-    async refreshContacts() {
-      this.loading = true
-      let custs = await customerAPI.getCustomers()
-      this.customers = custs.map(cust => {
-        return { value: cust.id, text: cust.name }
-      })
-      let conts = await contactAPI.getContacts()
-      this.contacts = conts.map(cont => {
-        if (custs.length != 0) {
-          let c = custs.filter(cust => cust.id === cont.customerId)
-          if (c.length != 0) {
-            cont.customerId = c[0].name
-          }
+    isLoggedIn() {
+      CheckLoggedIn(
+        () => {},
+        () => {
+          router.push({ name: "Login" });
         }
-        return cont
-      })
-      this.loading = false
+      );
+    },
+    async refreshContacts() {
+      this.loading = true;
+      this.isLoggedIn();
+      try {
+        this.context = await this.context.load();
+        this.contacts = await contactAPI.getPerAccount(this.context.account.id);
+        this.contact = new Contact();
+        this.contact.setRefID(this.context.account.id)
+      } catch (e) {
+        console.log("The Contacts were not able to load");
+      }
+      this.loading = false;
     },
     async populateContactToEdit(contact) {
-      let selected = this.customers.filter(
+      let selected = this.contacts.filter(
         cust => cust.text === contact.customerId
-      )
-      this.model = Object.assign({}, contact)
+      );
+      this.contact = Object.assign({}, contact);
       if (selected.length != 0) {
-        this.model = Object.assign(this.model, {
+        this.contact = Object.assign(this.context.entity, {
           customerId: selected[0].value
-        })
+        });
       }
     },
     async saveContact() {
-      if (this.model.id) {
-        await contactAPI.updateContact(this.model.id, this.model)
+      console.info('contact saving')
+      if (this.contact.id) {
+        this.contact = await contactAPI.updateContact(
+          this.contact.id,
+          this.contact
+        );
       } else {
-        await contactAPI.createContact(this.model)
+        this.contact = await contactAPI.createContact(this.contact);
       }
-      this.model = NewContact
-      await this.refreshContacts()
+      // this.contact = new Contact();
+      await this.refreshContacts();
     },
     async deleteContact(id) {
-      if (confirm('Are you sure you want to delete it ???')) {
-        if (this.model.id === id) {
-          this.model = NewContact
+      if (confirm("Are you sure you want to delete it ???")) {
+        if (this.contact.id === id) {
+          this.contact = new Contact();
         }
-        await contactAPI.deleteContact(id)
-        await this.refreshContacts()
+        await contactAPI.deleteContact(id);
+        await this.refreshContacts();
       }
     }
   }
-}
+};
 </script>

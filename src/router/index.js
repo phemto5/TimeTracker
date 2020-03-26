@@ -7,6 +7,10 @@ import Contact from '@/components/Contact'
 import Timer from '@/components/Timer'
 import Login from '@/components/Login'
 import Account from '@/components/Account'
+import Address from '@/components/Address'
+import Email from '@/components/Email'
+import Matter from '@/components/Matter'
+import EndType from '@/components/EndType'
 
 Vue.use(Router)
 
@@ -18,8 +22,8 @@ export default new Router({
       component: Help
     },
     {
-      path: '/chunks',
-      name: 'Time',
+      path: '/chunk',
+      name: 'Chunk',
       component: Chunk,
       meta: {}
     },
@@ -42,15 +46,39 @@ export default new Router({
       meta: {}
     },
     {
-      path: '/customers',
+      path: '/customer',
       name: 'Customer',
       component: Customer,
       meta: {}
     },
     {
-      path: '/contacts',
+      path: '/address',
+      name: 'Address',
+      component: Address,
+      meta: {}
+    },
+    {
+      path: '/contact',
       name: 'Contact',
       component: Contact,
+      meta: {}
+    },
+    {
+      path: '/matter',
+      name: 'Matter',
+      component: Matter,
+      meta: {}
+    },
+    {
+      path: '/endtype',
+      name: 'EndType',
+      component: EndType,
+      meta: {}
+    },
+    {
+      path: '/email',
+      name: 'Email',
+      component: Email,
       meta: {}
     }
   ]

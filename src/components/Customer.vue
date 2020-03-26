@@ -1,6 +1,11 @@
 <template>
   <div class="container-fluid mt-4">
-    <h1 class="h1">Customer Manger</h1>
+    <h1 class="PageHead bg-dark">
+      {{ ` Mangement : ${entity} ` }}
+      <span v-if="context.account">{{
+        `${context.account.id}-${context.account.uname}`
+      }}</span>
+    </h1>
     <b-alert :show="loading" variant="info">Loading...</b-alert>
     <b-row>
       <b-col>
@@ -39,10 +44,14 @@
         </table>
       </b-col>
       <b-col lg="3">
-        <b-card :title="model.id ? 'Edit Post ID#' + model.id : 'New Post'">
+        <b-card
+          :title="
+            customer.id ? `Edit ${entity} ID#` + customer.id : `New ${entity}`
+          "
+        >
           <form @submit.prevent="saveCustomer">
             <b-form-group label="Customer Name">
-              <b-form-input type="text" v-model="model.name"></b-form-input>
+              <b-form-input type="text" v-model="customer.name"></b-form-input>
             </b-form-group>
             <b-form-group label="Contacts">
               <!-- <b-list-group>
@@ -73,62 +82,66 @@
 </template>
 
 <script>
-import { customerAPI, contactAPI } from '@/api'
-import router from '../router'
-const NewCustomer = Object.assign({})
-
+import { customerAPI, contactAPI } from "@/api";
+import router from "../router";
+import Context from "../context";
+import Customer from "../Customer";
+import { CheckLoggedIn } from "../auth";
 export default {
   data() {
     return {
+      entity: "Customer",
       loading: false,
       customers: [],
-      model: NewCustomer
-    }
+      customer: new Customer(),
+      context: new Context()
+      // account: Object.assign({}, cleanAccount)
+    };
   },
   async created() {
-    let localAccount = JSON.parse(localStorage.getItem('account'))
-    if (!localAccount) {
-      router.push({ name: 'Login' })
-    }
-    this.refreshCustomers()
+    this.refreshCustomers();
   },
   methods: {
+    isLoggedIn() {
+      CheckLoggedIn(
+        () => {},
+        () => {
+          router.push({ name: "Login" });
+        }
+      );
+    },
     async refreshCustomers() {
-      this.loading = true
-      this.contacts = await contactAPI.getContacts()
-      this.customers = await customerAPI.getCustomers()
-      this.customers.forEach(cust => {
-        let custCon = this.contacts.filter(
-          contact => contact.customerId == cust.id
-        )
-        cust.contacts = custCon.reduce(
-          (list, con) => list + "'" + con.fname + ' ' + con.lname + "'",
-          ''
-        )
-      })
-      this.loading = false
+      this.loading = true;
+      this.isLoggedIn();
+      try {
+        this.context = await this.context.load();
+        this.customers = await customerAPI.getPerAccount();
+      } catch (e) {
+        console.log(`failed to get Customers from online`, e);
+      }
+      this.loading = false;
     },
     async populateCustomerToEdit(customer) {
-      this.model = Object.assign({}, customer)
+      this.customer = Object.assign({}, customer);
     },
     async saveCustomer() {
-      if (this.model.id) {
-        await customerAPI.updateCustomer(this.model.id, this.model)
+      if (this.customer.id) {
+        await customerAPI.updateCustomer(this.customer.id, this.customer);
       } else {
-        await customerAPI.createCustomer(this.model)
+        await customerAPI.createCustomer(this.customer);
       }
-      this.model = NewCustomer
-      await this.refreshCustomers()
+      this.customer = new Customer();
+      await this.refreshCustomers();
     },
     async deleteCustomer(id) {
-      if (confirm('Are you sure you want to delete it ???')) {
-        if (this.model.id === id) {
-          this.model = NewCustomer
+      if (confirm("Are you sure you want to delete it ???")) {
+        if (this.customer.id === id) {
+          this.customer = new Customer();
         }
-        await customerAPI.deleteCustomer(id)
-        await this.refreshCustomers()
+        await customerAPI.deleteCustomer(id);
+        await this.refreshCustomers();
       }
     }
   }
-}
+};
 </script>

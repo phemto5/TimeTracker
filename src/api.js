@@ -38,7 +38,7 @@ export const passwordAPI = {
   getPassword(id) {
     return this.execute('get', `/password/${id}`)
   },
-  getPasswordByAccountId(unameid) {
+  getPerAccount(unameid) {
     return this.execute('get', `/password?unameid=${unameid}`)
   },
   createPassword(data) {
@@ -74,8 +74,8 @@ export const chunkAPI = {
   getChunks() {
     return this.execute('get', '/chunks')
   },
-  getChunksByAccount(account) {
-    return this.execute('get', `/chunks?owner=${account}`)
+  getPerAccount(account) {
+    return this.execute('get', `/chunks/?refID=${account}`)
   },
   getChunk(id) {
     return this.execute('get', `/chunks/${id}`)
@@ -96,6 +96,9 @@ export const customerAPI = {
   getCustomers() {
     return this.execute('get', '/customers')
   },
+  getPerAccount(accountid) {
+    return this.execute('get', `/customers/?refID=${accountid}`)
+  },
   getCustomer(id) {
     return this.execute('get', `/customers/${id}`)
   },
@@ -114,6 +117,9 @@ export const contactAPI = {
   getContacts() {
     return this.execute('get', '/contacts')
   },
+  getPerAccount(accountid) {
+    return this.execute('get', `/contacts/?refID=${accountid}`)
+  },
   getContact(id) {
     return this.execute('get', `/contacts/${id}`)
   },
@@ -125,5 +131,90 @@ export const contactAPI = {
   },
   deleteContact(id) {
     return this.execute('delete', `/contacts/${id}`)
+  }
+}
+export const addressAPI = {
+  execute: exebase,
+  getAddresses() {
+    return this.execute('get', '/addresses')
+  },
+  getPerAccount(accountid) {
+    return this.execute('get', `/addresses/?refID=${accountid}`)
+  },
+  getAddress(id) {
+    return this.execute('get', `/addresses/${id}`)
+  },
+  createAddress(data) {
+    return this.execute('post', `/addresses`, data)
+  },
+  updateAddress(id, data) {
+    return this.execute('put', `/addresses/${id}`, data)
+  },
+  deleteAddress(id) {
+    return this.execute('delete', `/addresses/${id}`)
+  }
+}
+export const emailAPI = {
+  execute: exebase,
+  getEmails() {
+    return this.execute('get', '/emails')
+  },
+  getPerAccount(accountid) {
+    return this.execute('get', `/emails/?refID=${accountid}`)
+  },
+  getEmail(id) {
+    return this.execute('get', `/emails/${id}`)
+  },
+  createEmail(data) {
+    return this.execute('post', `/emails`, data)
+  },
+  updateEmail(id, data) {
+    return this.execute('put', `/emails/${id}`, data)
+  },
+  deleteEmail(id) {
+    return this.execute('delete', `/emails/${id}`)
+  }
+}
+export const matterAPI = {
+  execute: exebase,
+  getMatters() {
+    return this.execute('get', '/matters')
+  },
+  getPerAccount(accountid) {
+    return this.execute('get', `/matters/?refID=${accountid}`)
+  },
+  getMatter(id) {
+    return this.execute('get', `/matters/${id}`)
+  },
+  createMatter(data) {
+    return this.execute('post', `/matters`, data)
+  },
+  updateMatter(id, data) {
+    return this.execute('put', `/matters/${id}`, data)
+  },
+  deleteMatter(id) {
+    return this.execute('delete', `/matters/${id}`)
+  }
+}
+
+export const endtypeAPI = {
+  execute: exebase,
+  getEndTypes() {
+    return this.execute('get', '/endtypes')
+  },
+  getPerAccount(accountid) {
+    return this.execute('get', `/endtypes/?refID=${accountid}`)
+  },
+  getEndType(id) {
+    return this.execute('get', `/endtypes/${id}`)
+  },
+  createEndType(data) {
+    return this.execute('post', `/endtypes`, data)
+  },
+  updateEndType(id, data) {
+    return this.execute('put', `/endtypes/${id}`, data)
+  },
+  deleteEndType(id) {
+    return this.execute('delete', `/endtypes/${id}`)
   }
 }

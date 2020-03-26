@@ -1,6 +1,8 @@
 <template>
   <div class="container-fluid mt-4">
-    <h1 class="h1">Timer</h1>
+    <h1 class="PageHead bg-dark">
+      {{ ` ${entity} :: ${context.account.id}-${context.account.uname}` }}
+    </h1>
     <b-alert :show="loading" variant="info">Loading...</b-alert>
     <b-row>
       <b-col sm="12" md="6" lg="8" xl="10">
@@ -50,82 +52,84 @@
 </template>
 
 <script>
-import { chunkAPI } from '@/api'
-import router from '../router'
-import * as moment from 'moment'
-import AccountVue from './Account.vue'
-import { CheckLoggedIn } from '../auth'
-
-let timer = Object.assign({
-  start: null,
-  open: false,
-  stop: null,
-  cust: null,
-  body: '',
-  owner: 0
-})
+import { chunkAPI } from "@/api";
+import router from "../router";
+import * as moment from "moment";
+import Context from "../context";
+import Chunk from "../Chunk";
+import { CheckLoggedIn } from "../auth";
+// const cleanChunk = new Chunk();
 export default {
   data() {
     return {
+      entity: `Timer`,
       loading: false,
-      timer: timer,
+      timer: new Chunk(),
       time: 0,
       interval: null,
       showStart: true,
-      account: AccountVue
-    }
+      context: new Context()
+    };
   },
   async created() {
-    this.refreshForm()
+    await this.refreshForm();
   },
   methods: {
-    refreshForm() {
-      this.loading = true
+    isLoggedIn() {
       CheckLoggedIn(
         () => {},
         () => {
-          router.push({ name: 'Login' })
+          router.push({ name: "Login" });
         }
-      )
-      this.timer = timer
-      this.loading = false
+      );
+    },
+    async refreshForm() {
+      this.loading = true;
+      this.isLoggedIn();
+      try {
+        this.context = await this.context.load(); // = Object.assign(this.context, ctx);
+        // console.log(this.context.account)
+        this.timer = this.timer.setRefID(this.context.account.id); //Object.assign(cleanChunk);
+      } catch (e) {
+        console.error("not able to load Timer");
+      }
+      this.loading = false;
     },
     updateTime() {
-      this.time = moment(this.timer.start).fromNow('mm')
+      this.time = moment(this.timer.start).fromNow("mm");
     },
     updateBody() {
-      this.timer.body = this.timer.body
+      this.timer.body = this.timer.body;
     },
     async startChunk(evt) {
-      this.refreshForm()
-      evt.preventDefault()
-      this.timer.start = new Date()
-      this.timer.open = true
-      this.timer.owner = this.account.id
-      this.timer = await chunkAPI.createChunk(this.timer)
-      this.showStart = this.timer.start ? false : true
+      // this.refreshForm();
+      evt.preventDefault();
+      this.timer = new Chunk();
+      this.timer.start = new Date();
+      this.timer.open = true;
+      this.timer.refID = this.context.account.id;
+      this.timer = await chunkAPI.createChunk(this.timer);
+      this.showStart = this.timer.start ? false : true;
       this.interval = setInterval(() => {
-        this.updateTime()
-        console.log('StartedTime')
-      }, 1000)
+        this.updateTime();
+        // console.log("StartedTime");
+      }, 1000);
     },
     async nextChunk(evt) {
       if (this.timer.open) {
-        await this.stopChunk(evt)
+        await this.stopChunk(evt);
       }
-      this.refreshForm()
-      await this.startChunk(evt)
+      this.refreshForm();
+      await this.startChunk(evt);
     },
 
     async stopChunk(evt) {
-      evt.preventDefault()
-      clearInterval(this.interval)
-      this.timer.stop = new Date()
-      this.timer.open = false
-      this.timer = await chunkAPI.updateChunk(this.timer.id, this.timer)
-
-      // this.timer = timer;
+      evt.preventDefault();
+      clearInterval(this.interval);
+      this.timer.stop = new Date();
+      this.timer.open = false;
+      this.timer = await chunkAPI.updateChunk(this.timer.id, this.timer);
     }
   }
-}
+};
 </script>
