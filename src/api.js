@@ -165,14 +165,14 @@ export const emailAPI = {
   getEmail(id) {
     return this.execute('get', `/emails/${id}`)
   },
-  createEmail(dara) {
-    return this.execute('get', `/emails`, data)
+  createEmail(data) {
+    return this.execute('post', `/emails`, data)
   },
   updateEmail(id, data) {
-    return this.execute('get', `/emails/${id}`, data)
+    return this.execute('put', `/emails/${id}`, data)
   },
   deleteEmail(id) {
-    return this.execute('get', `/emails/${id}`)
+    return this.execute('delete', `/emails/${id}`)
   }
 }
 export const matterAPI = {

@@ -8,6 +8,7 @@ import Timer from '@/components/Timer'
 import Login from '@/components/Login'
 import Account from '@/components/Account'
 import Address from '@/components/Address'
+import Email from '@/components/Email'
 import Matter from '@/components/Matter'
 import EndType from '@/components/EndType'
 
@@ -72,6 +73,12 @@ export default new Router({
       path: '/endtype',
       name: 'EndType',
       component: EndType,
+      meta: {}
+    },
+    {
+      path: '/email',
+      name: 'Email',
+      component: Email,
       meta: {}
     }
   ]
