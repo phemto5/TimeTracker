@@ -23,7 +23,7 @@ export default class Chunk {
   //   }
   //   return chunks;
   // }
-  async setRefID(accountid) {
+  setRefID(accountid) {
     this.refID = accountid
     return this;
   }

@@ -78,18 +78,22 @@ export default {
       entity: `Chunk`,
       loading: false,
       chunks: [],
-      // customers: [],
+      customers: [],
       chunk: new Chunk(),
       context: new Context()
     };
   },
   async created() {
+    console.log('Created!')
     await this.refreshForm();
+    // await this.isLoggedIn();
   },
   methods: {
     isLoggedIn() {
       CheckLoggedIn(
-        () => {},
+        async () => {
+          await this.refreshForm()
+        },
         () => {
           router.push({ name: "Login" });
         }
@@ -97,11 +101,12 @@ export default {
     },
     async refreshForm() {
       this.loading = true;
-      this.isLoggedIn();
+      // this.isLoggedIn();
       try {
         this.context = await this.context.load();
+        console.log('Account loaded')
         this.chunks = await chunkAPI.getPerAccount(this.context.account.id);
-        this.chunk.setRefID(this.context.account.id);
+        this.chunk = this.chunk.setRefID(this.context.account.id);
         // this.customers = await customerAPI.getPerAccount(
         //   this.context.account.id
         // );

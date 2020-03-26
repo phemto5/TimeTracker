@@ -1,9 +1,10 @@
 <template>
   <div class="container-fluid mt-4">
-    <h1 class="PageHead bg-dark">
+    <h1 class="PageHead bg-dark" >
       {{
-        ` Mangement : ${entity} :: ${context.account.id}-${context.account.uname}`
+        ` Mangement : ${entity} `
       }}
+      <span v-if="context.account">{{`${context.account.id}-${context.account.uname}`}}</span>
     </h1>
     <b-alert :show="loading" variant="info">Loading...</b-alert>
     <b-row>
@@ -13,7 +14,7 @@
             <b-form-group id="login" label="LoginName" label-for="login">
               <b-form-input
                 id="login"
-                v-model="context.account.uname"
+                v-model="account.uname"
                 type="text"
                 required
                 placeholder="UserName"
@@ -49,17 +50,21 @@ import router from "../router";
 import { CheckLoggedIn } from "../auth";
 import Context from "../context";
 import Password from "../Password";
+import Account from '../Account'
 // let password = {
 //   unameid: 0,
 //   password: ""
 // };
 export default {
   data() {
+    let ctx = new Context();
+    let pw = new Password();
     return {
       entity: `Login`,
       loading: false,
-      context: new Context(),
-      password: new Password(), // Object.assign({}, password),
+      context: ctx,//{account:{id:0}},
+      password: pw, // Object.assign({}, password),
+      account: new Account(),
       warn: false
     };
   },
@@ -97,10 +102,11 @@ export default {
       console.log("Logging in");
       let token = { msg: "", accountId: null, token: null, expires: null };
       token = await loginAPI.login(
-        this.context.account.uname,
+        this.account.uname,
         this.password.password
       );
       if (token.accountId && token.accountId > 0) {
+        console.info('Setting all storageitems');
         localStorage.setItem("loggedin", true);
         localStorage.setItem("token", token.token);
         localStorage.setItem("expires", token.expires);

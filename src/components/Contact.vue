@@ -1,9 +1,10 @@
 <template>
   <div class="container-fluid mt-4">
     <h1 class="PageHead bg-dark">
-      {{
-        ` Mangement : ${entity} :: ${context.account.id}-${context.account.uname}`
-      }}
+      {{ ` Mangement : ${entity} ` }}
+      <span v-if="context.account">{{
+        `${context.account.id}-${context.account.uname}`
+      }}</span>
     </h1>
     <b-alert :show="loading" variant="info">Loading...</b-alert>
     <b-row>
@@ -136,6 +137,7 @@ export default {
         this.context = await this.context.load();
         this.contacts = await contactAPI.getPerAccount(this.context.account.id);
         this.contact = new Contact();
+        this.contact.setRefID(this.context.account.id)
       } catch (e) {
         console.log("The Contacts were not able to load");
       }
@@ -153,6 +155,7 @@ export default {
       }
     },
     async saveContact() {
+      console.info('contact saving')
       if (this.contact.id) {
         this.contact = await contactAPI.updateContact(
           this.contact.id,

@@ -1,9 +1,10 @@
 <template>
   <div class="container-fluid mt-4">
     <h1 class="PageHead bg-dark">
-      {{
-        ` Mangement : ${entity} :: ${context.account.id}-${context.account.uname}`
-      }}
+      {{ ` Mangement : ${entity} ` }}
+      <span v-if="context.account">{{
+        `${context.account.id}-${context.account.uname}`
+      }}</span>
     </h1>
     <b-alert :show="loading" variant="info">Loading...</b-alert>
     <b-row>
@@ -113,7 +114,7 @@ export default {
       this.loading = true;
       this.isLoggedIn();
       try {
-        await this.context.load();
+        this.context = await this.context.load();
         this.customers = await customerAPI.getPerAccount();
       } catch (e) {
         console.log(`failed to get Customers from online`, e);
@@ -129,13 +130,13 @@ export default {
       } else {
         await customerAPI.createCustomer(this.customer);
       }
-      this.customer = cleanCustomer;
+      this.customer = new Customer();
       await this.refreshCustomers();
     },
     async deleteCustomer(id) {
       if (confirm("Are you sure you want to delete it ???")) {
         if (this.customer.id === id) {
-          this.customer = cleanCustomer;
+          this.customer = new Customer();
         }
         await customerAPI.deleteCustomer(id);
         await this.refreshCustomers();

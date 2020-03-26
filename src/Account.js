@@ -4,7 +4,13 @@ export default class Account {
   lname = ""
   mname = ""
   id = 0
-  Account() { }
+  Account() {
+    uname = ""
+    fname = ""
+    lname = ""
+    mname = ""
+    id = 0
+  }
   Account(uname, id) {
     this.uname = uname;
     this.id = id;

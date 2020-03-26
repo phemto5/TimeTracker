@@ -22,7 +22,7 @@ export default new Router({
     },
     {
       path: '/chunk',
-      name: 'Time',
+      name: 'Chunk',
       component: Chunk,
       meta: {}
     },

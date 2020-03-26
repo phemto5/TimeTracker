@@ -1,6 +1,10 @@
 <template>
   <div class="container-fluid mt-4">
-    <h1 class="PageHead bg-dark">{{ `${entity} : Mangement :: ${account.id}-${account.uname}`  }}</h1>
+    <h1 class="PageHead bg-dark">
+      {{
+        `${entity} : Mangement :: ${context.account.id}-${context.account.uname}`
+      }}
+    </h1>
     <b-alert :show="loading" variant="info">Loading...</b-alert>
     <b-row>
       <b-col>
@@ -84,17 +88,21 @@
               ></b-form-input>
             </b-form-group>
             <b-form-group label="Other">
-              <b-form-input
+              <b-form-select
+                v-if="!address.endpointType"
                 type="text"
                 placeholder="EndpointType"
                 v-model="address.endpointType"
-              ></b-form-input>
+                :options="[]"
+              ></b-form-select>
               <b-form-input
+                v-if="!address.refType"
                 type="text"
                 placeholder="RefType"
                 v-model="address.refType"
               ></b-form-input>
               <b-form-input
+                v-if="!address.refID"
                 type="text"
                 placeholder="RefID"
                 v-model="address.refID"
@@ -114,79 +122,55 @@
 import { accountAPI, passwordAPI, loginAPI, addressAPI } from "@/api";
 import { CheckLoggedIn } from "../auth";
 import router from "../router";
-const cleanAddress = {
-  street1: "",
-  street2: "",
-  city: "",
-  country: "",
-  state: "",
-  zip: "",
-  endpointType: 0,
-  refType: "",
-  refID: 0
-};
-const cleanAccount = {
-  uname: "",
-  fname: "",
-  lname: "",
-  mname: "",
-  id: 0
-};
+import Context from "../context";
+import Address from "../Address";
+const refType = "Account";
 export default {
   data() {
     return {
       entity: `Address`,
       loading: false,
-      account: Object.assign({}, cleanAccount),
-      address: Object.assign({}, cleanAddress),
+      context: new Context(),
+      address: new Address(),
       addresses: []
     };
   },
   async created() {
-    this.isLoggedIn(
-      () => {
-        this.refreshForm();
-      },
-      () => {
-        router.push({ name: "Login" });
-      }
-    );
-    this.refreshForm();
+    await this.refreshForm();
   },
   methods: {
-    isLoggedIn(suc, fail) {
-      CheckLoggedIn(suc, fail);
+    isLoggedIn() {
+      CheckLoggedIn(
+        () => {},
+        () => {
+          router.push({ name: "Login" });
+        }
+      );
     },
     async refreshForm() {
       this.loading = true;
-      const localAccountId = localStorage.getItem("accountId");
-      if (localAccountId) {
-        this.account = cleanAccount;
-        this.account = JSON.parse(localStorage.getItem("account"));
-        this.state = "Local";
-        try {
-          this.account = await accountAPI.getAccount(localAccountId);
-          localStorage.setItem("account", JSON.stringify(this.account));
-          this.state = "Online";
-          this.addresses = await addressAPI.getAddressesPerAccount(this.account.id);
-          this.address = Object.assign({},cleanAddress,{refID:this.account.id});
-        } catch (e) {
-          console.log(`failed to get Account from online`, e);
-          this.state = "Offline";
-        }
-      } else {
-        this.account = cleanAccount;
+      this.isLoggedIn();
+      try {
+        this.context = await this.context.load();
+        this.addresses = await addressAPI.getPerAccount(
+          this.context.account.id
+        );
+        this.address = new Address();
+        this.address.setRefID(this.context.account.id, refType);
+        // console.info(`loaded all the addresses and set the blank`);
+        // this.address = this.address.setRefID(this.context.account.id);
+      } catch (e) {
+        console.erro(`failed to get Addresses from online`, e);
       }
       this.loading = false;
     },
     clearForm() {
       this.loading = true;
-      this.account = Object.assign({}, cleanAccount);
-      this.address = Object.assign({}, cleanAddress);
+      this.address = new Address(this.context.account.id, refType);
       this.loading = false;
     },
     async populateAddressToEdit(address) {
-      this.address = Object.assign({}, cleanAddress,address,{refID:this.account.id});
+      this.address = address; //new Address(address);
     },
     async saveAddress() {
       if (this.address.id) {
@@ -194,15 +178,15 @@ export default {
       } else {
         await addressAPI.createAddress(this.address);
       }
-      this.address = cleanAddress;
-      await this.refreshForm()
+      this.address = new Address(this.context.account.id, refType);
+      await this.refreshForm();
     },
     async deleteAddress(id) {
       if (confirm("Are you sure you want to delete it ???")) {
         if (this.address.id === id) {
-          this.address = cleanAddress;
+          this.address = new Address();
         }
-        await contactAPI.deleteContact(id);
+        await addressAPI.deleteAddress(id);
         await this.refreshForm();
       }
     }
