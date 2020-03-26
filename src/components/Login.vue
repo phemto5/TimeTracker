@@ -107,9 +107,9 @@ export default {
         localStorage.setItem("accountId", token.accountId);
         try {
           this.context.account = await accountAPI.getAccount(token.accountId);
-          localStorage.setItem("account", JSON.stringify(this.account));
+          localStorage.setItem("account", JSON.stringify(this.context.account));
         } catch (e) {
-          console.log(`Could not load Account`);
+          console.log(`Could not load Login`);
         }
         window.location.reload();
         console.log(`Reloading Window`);

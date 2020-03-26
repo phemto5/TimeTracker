@@ -9,6 +9,7 @@ import Login from '@/components/Login'
 import Account from '@/components/Account'
 import Address from '@/components/Address'
 import Matter from '@/components/Matter'
+import EndType from '@/components/EndType'
 
 Vue.use(Router)
 
@@ -20,7 +21,7 @@ export default new Router({
       component: Help
     },
     {
-      path: '/chunks',
+      path: '/chunk',
       name: 'Time',
       component: Chunk,
       meta: {}
@@ -44,7 +45,7 @@ export default new Router({
       meta: {}
     },
     {
-      path: '/customers',
+      path: '/customer',
       name: 'Customer',
       component: Customer,
       meta: {}
@@ -56,7 +57,7 @@ export default new Router({
       meta: {}
     },
     {
-      path: '/contacts',
+      path: '/contact',
       name: 'Contact',
       component: Contact,
       meta: {}
@@ -65,6 +66,12 @@ export default new Router({
       path: '/matter',
       name: 'Matter',
       component: Matter,
+      meta: {}
+    },
+    {
+      path: '/endtype',
+      name: 'EndType',
+      component: EndType,
       meta: {}
     }
   ]

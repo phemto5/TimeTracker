@@ -88,6 +88,7 @@ export default {
       this.isLoggedIn();
       try {
         this.context = await this.context.load(); // = Object.assign(this.context, ctx);
+        // console.log(this.context.account)
         this.timer.setRefID(this.context.account.id); //Object.assign(cleanChunk);
       } catch (e) {
         console.log("not able to load Timer");

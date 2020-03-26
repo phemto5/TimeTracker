@@ -26,9 +26,7 @@
                 <a href="#" @click.prevent="populateEndTypeToEdit(endtype)"
                   >Edit</a
                 >
-                <a href="#" @click.prevent="deleteEndType(endtype.id)"
-                  >Delete</a
-                >
+                <a href="#" @click.prevent="deleteEndType(endtype.id)">Delete</a>
               </td>
             </tr>
           </tbody>
@@ -41,16 +39,24 @@
           "
         >
           <form @submit.prevent="saveEndType">
+            <!-- <b-form-input
+              v-if="endtype.id"
+              type="text"
+              placeholder="ID"
+              v-model="endtype.id"
+              readonly="readonly"
+            ></b-form-input> -->
             <b-form-input
               type="text"
               placeholder="Name"
               v-model="endtype.name"
             ></b-form-input>
-            <b-form-input
+            <!-- <b-form-input
               type="text"
-              placeholder="refID"
+              placeholder="RefID"
               v-model="endtype.refID"
-            ></b-form-input>
+              readonly="readonly"
+            ></b-form-input> -->
             <div>
               <b-button type="submit" variant="success">Save</b-button>
             </div>
@@ -62,32 +68,31 @@
 </template>
 
 <script>
-import { accountAPI, passwordAPI, loginAPI, addressAPI } from "@/api";
+import { accountAPI, passwordAPI, loginAPI, endtypeAPI } from "@/api";
 import { CheckLoggedIn } from "../auth";
-import router from "../router";
 import Context from "../context";
 import EndType from "../EndType";
-import { endtypeAPI } from "../api";
+import router from "../router";
 export default {
   data() {
     return {
       entity: `EndType`,
       loading: false,
-      context: new Context(),
-      endtype: new EndType(),
-      endtypes: []
+      endtype: new EndType(), //Object.assign({}, cleanEndType),
+      endtypes: [],
+      context: new Context()
     };
   },
   async created() {
     this.isLoggedIn(
-      () => {
-        // this.refreshForm();
+      async () => {
+        await this.refreshForm();
       },
       () => {
         router.push({ name: "Login" });
       }
     );
-    this.refreshForm();
+    // this.refreshForm();
   },
   methods: {
     isLoggedIn(suc, fail) {
@@ -96,30 +101,29 @@ export default {
     async refreshForm() {
       this.loading = true;
       try {
-        this.context.load();
+        this.context = await this.context.load();
         this.endtypes = await endtypeAPI.getPerAccount(this.context.account.id);
-        this.endtype.setRefID(this.context.account.id);
+        this.endtype = await this.endtype.setRefID(this.context.account.id);
       } catch (e) {
-        console.log(`failed to get EndType from online`, e);
+        console.log(`failed to get EndTypes from online`, e);
       }
       this.loading = false;
     },
     clearForm() {
       this.loading = true;
-      this.endtype = new EndType();
+      this.endtype = new EndType(); //Object.assign({}, cleanEndType);
       this.loading = false;
     },
     async populateEndTypeToEdit(endtype) {
-      this.endtype = endtype;
-      this.endtype.setRefID(this.context.account.id);
+      this.endtype =  endtype
     },
     async saveEndType() {
-      if (this.endtype.id) {
-        await endtypeAPI.updateAddress(this.endtype.id, this.endtype);
+      if (this.endtype.id){
+        this.endtype = await endtypeAPI.updateEndType(this.endtype.id, this.endtype);
       } else {
-        await endtypeAPI.createAddress(this.endtype);
+        this.endtype = await endtypeAPI.createEndType(this.endtype);
       }
-      this.endtype = new EdnType(); //cleanAddress;
+      this.endtype = new EndType(this.context.account.id);
       await this.refreshForm();
     },
     async deleteEndType(id) {

@@ -39,22 +39,24 @@
           "
         >
           <form @submit.prevent="saveMatter">
-            <b-form-input
+            <!-- <b-form-input
+              v-if="matter.id"
               type="text"
               placeholder="ID"
               v-model="matter.id"
               readonly="readonly"
-            ></b-form-input>
+            ></b-form-input> -->
             <b-form-input
               type="text"
               placeholder="Name"
               v-model="matter.name"
             ></b-form-input>
-            <b-form-input
+            <!-- <b-form-input
               type="text"
               placeholder="RefID"
               v-model="matter.refID"
-            ></b-form-input>
+              readonly="readonly"
+            ></b-form-input> -->
             <div>
               <b-button type="submit" variant="success">Save</b-button>
             </div>
@@ -113,9 +115,7 @@ export default {
       this.loading = false;
     },
     async populateMatterToEdit(matter) {
-      this.matter = Object.assign({}, cleanMatter, matter, {
-        refID: this.account.id
-      });
+      this.matter =  matter
     },
     async saveMatter() {
       if (this.matter.id) {
@@ -123,13 +123,13 @@ export default {
       } else {
         await matterAPI.createMatter(this.matter);
       }
-      this.matter = cleanMatter;
+      this.matter = new Matter();
       await this.refreshForm();
     },
     async deleteMatter(id) {
       if (confirm("Are you sure you want to delete it ???")) {
         if (this.matter.id === id) {
-          this.matter = cleanMatter;
+          this.matter = new Matter();
         }
         await matterAPI.deleteMatter(id);
         await this.refreshForm();
